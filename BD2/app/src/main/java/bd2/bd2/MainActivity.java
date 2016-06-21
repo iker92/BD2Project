@@ -4,30 +4,15 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Adapter;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
-
-//import com.esri.arcgisruntime.*;
-//import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.android.map.GraphicsLayer;
-import com.esri.android.map.MapOptions;
 import com.esri.android.map.MapView;
-import com.esri.android.map.ags.ArcGISTiledMapServiceLayer;
-import com.esri.android.map.event.OnStatusChangedListener;
-import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-
 import jsqlite.Exception;
 
 
