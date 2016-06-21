@@ -8,27 +8,15 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="bd2.bd2.MainActivity">
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        tools:context=".MainActivity">
 
-        <ListView
-            android:id="@+id/listView"
+    <com.esri.android.map.MapView
+            android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center" />
-    </FrameLayout>
+            mapoptions.MapType="Topo"
+            mapoptions.center="39.2305400, 9.1191700"
+            mapoptions.ZoomLevel="10">
+    </com.esri.android.map.MapView>
 
-    <TextView
-        android:id="@+id/result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
 </RelativeLayout>
 

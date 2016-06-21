@@ -7,6 +7,8 @@ task copyNativeLibs(type: Copy) {
     from(new File(project(':..:Spatialite-Database-Driver:spatialite-db-driver').projectDir, 'src/main/java/jniLibs')) {
         include 'armeabi/libjsqlite.so'
         include 'armeabi-v7a/libjsqlite.so'
+        include 'armeabi/libruntimecore_java.so'
+        include 'armeabi-v7a/libruntimecore_java.so'
     }
     into new File(buildDir, 'native-libs')
 }
@@ -39,6 +41,13 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    packagingOptions{
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/NOTICE'
+    }
+
+
     buildTypes {
         release {
             minifyEnabled false
