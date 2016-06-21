@@ -62,4 +62,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     //NOTE: add dependency on library/module
     compile project(':..:Spatialite-Database-Driver:spatialite-db-driver')
+    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.12'
 }

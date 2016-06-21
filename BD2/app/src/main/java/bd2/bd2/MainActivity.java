@@ -33,7 +33,6 @@ import jsqlite.Exception;
 
 public class MainActivity extends Activity{
 
-    private ListView listView;
     MapView mMapView;
     boolean flag=false;
 
@@ -42,10 +41,7 @@ public class MainActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mMapView = (MapView) findViewById(R.id.map);
-        //TextView result=(TextView) findViewById(R.id.result);
 
-
-        //this.listView = (ListView) findViewById(R.id.listView);
         DatabaseAccess databaseAccess = null;
         try {
             databaseAccess = DatabaseAccess.getInstance(this);
@@ -53,7 +49,6 @@ public class MainActivity extends Activity{
             e.printStackTrace();
         }
 
-        //  GraphicsLayer quotes=databaseAccess.queryTableSimple();
         ArrayList<Point> points = databaseAccess.queryComuniNearby();
 
         SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED , 8, SimpleMarkerSymbol.STYLE.CIRCLE);
@@ -67,16 +62,6 @@ public class MainActivity extends Activity{
             layer.addGraphic(new Graphic(webPoint, sms));
         }
 
-
-        //layer.setVisible(true);
-        //flag=layer.isVisible();
-       /* SpatialReference mSR = graphics[0].getSpatialReference();
-        Point p1 = GeometryEngine.project(39.2305400, 0.0, mSR);
-        Point p2 = GeometryEngine.project(-60.0, 50.0, mSR);
-        Envelope mInitExtent = new Envelope(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-        mMapView.setExtent(mInitExtent);*/
-        //mMapView.addLayer(basemapTileLayer);
-        //mMapView.setEnabled(true);
         mMapView.addLayer(layer);
 
         try {
@@ -84,8 +69,7 @@ public class MainActivity extends Activity{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //Log.d("layer info: ",info);
+
         Log.d("layer visibile?",String.valueOf(flag));
-      //result.setText(quotes);
     }
 }
