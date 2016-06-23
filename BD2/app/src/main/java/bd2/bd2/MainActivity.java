@@ -5,9 +5,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import com.esri.android.map.GraphicsLayer;
+import com.esri.android.map.Layer;
 import com.esri.android.map.MapView;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
+import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
@@ -33,21 +35,33 @@ public class MainActivity extends Activity{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         ArrayList<Point> points = databaseAccess.queryComuniNearby();
 
+       ArrayList<Polyline> polyLine =databaseAccess.queryComuniNearbyPolyLine();
+
         SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED , 8, SimpleMarkerSymbol.STYLE.CIRCLE);
+        SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.BLUE , 4, SimpleMarkerSymbol.STYLE.CROSS);
         GraphicsLayer layer = new GraphicsLayer();
-        SpatialReference webSR = SpatialReference.create(3857);
-
+        GraphicsLayer layer_poly=new GraphicsLayer();
+        SpatialReference input=SpatialReference.create(3003);
+        SpatialReference output = SpatialReference.create(3857);
+        Point p=new Point();
         //aggiungo i punti al layer
-        for (int i = 0; i < points.size(); i++) {
+       for (int i = 0; i < points.size(); i++) {
 
-            Point webPoint = GeometryEngine.project(points.get(i).getX(), points.get(i).getY(), webSR);
+            p.setXY(points.get(i).getX(),points.get(i).getY());
+
+            Point webPoint = (Point)GeometryEngine.project(p,input, output);
+
             layer.addGraphic(new Graphic(webPoint, sms));
+
+        }
+       for (int i = 0; i <polyLine.size() ; i++) {
+
+            layer_poly.addGraphic(new Graphic(polyLine.get(i),sms_poly));
         }
 
-        mMapView.addLayer(layer);
+        mMapView.addLayers(new Layer[]{layer,layer_poly});
 
         try {
             databaseAccess.close();
@@ -55,6 +69,6 @@ public class MainActivity extends Activity{
             e.printStackTrace();
         }
 
-        Log.d("layer visibile?",String.valueOf(flag));
+        Log.d("layer visibile?",String.valueOf(layer.isVisible()));
     }
 }
