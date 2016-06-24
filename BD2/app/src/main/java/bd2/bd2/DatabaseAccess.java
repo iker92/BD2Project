@@ -103,7 +103,6 @@ public class DatabaseAccess {
         }
     }
 
-
     /**
      * prima query spaziale che rende dei punti che individuano
      * i paesi che toccano i bordi di Decimoputzu
@@ -148,12 +147,15 @@ public class DatabaseAccess {
             while (stmt.step()) {
                 String name = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
-                System.out.println(stmt.column_string(0));
                 // mettere i punti trovati in un array per poi creare la polyline associata
                 double x = Double.valueOf(wkt.substring(6, 20));
                 double y = Double.valueOf(wkt.substring(20, 34));
                 Point point = new Point(x, y);
-                point_result.add(point);
+                SpatialReference input = SpatialReference.create(3003);
+                SpatialReference output = SpatialReference.create(3857);
+                point.setXY(x, y);
+                Point webPoint = (Point) GeometryEngine.project(point, input, output);
+                point_result.add(webPoint);
             }
             stmt.close();
 
@@ -165,6 +167,7 @@ public class DatabaseAccess {
 
         return point_result;
     }
+
 
 
     public ArrayList<Polygon> queryComuniNearbyPolygon() {
@@ -211,7 +214,6 @@ public class DatabaseAccess {
 
             while (stmt.step()) {
 
-                System.out.println(stmt.column_string(1));
                 String name = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
                 multi_line.add(wkt);

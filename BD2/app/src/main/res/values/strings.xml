@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">BD2</string>
+    <string-array name="nomi_query">
+        <item>Query 1</item>
+        <item>Query 2</item>
+        <item>Query 3</item>
+    </string-array>
 </resources>
