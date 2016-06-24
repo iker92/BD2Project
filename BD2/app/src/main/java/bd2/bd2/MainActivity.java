@@ -65,8 +65,6 @@ public class MainActivity extends Activity {
 
         GraphicsLayer layer = new GraphicsLayer();
 
-        //ArrayList<GraphicsLayer> layer_poly=new ArrayList<>();
-
 
         Point p = new Point();
         //aggiungo i punti al layer
@@ -120,12 +118,7 @@ public class MainActivity extends Activity {
                     if ((mMapState != null) && (!mMapState.isEmpty())) {
                         mMapView.restoreState(mMapState);
                     }
-                    else {
-                        Point p=new Point(39.5,8.75);
-                        Point webPoint = (Point) GeometryEngine.project(p, input, output);
-                        // If there was no saved state then set default resolution and center
-                        mMapView.zoomToResolution(webPoint, 1.53);
-                    }
+
 
                 }
 
