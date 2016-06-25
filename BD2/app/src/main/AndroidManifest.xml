@@ -16,13 +16,25 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity><activity android:name=".Query1Activity">
+        </activity>
+
+        <activity android:name=".Query1Activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity><activity android:name=".Query2Activity">
+        </activity>
+
+        <activity android:name=".Query2Activity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Query3Activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
