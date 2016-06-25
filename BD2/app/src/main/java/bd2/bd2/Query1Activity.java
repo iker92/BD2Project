@@ -3,20 +3,15 @@ package bd2.bd2;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
-
 import com.esri.android.map.GraphicsLayer;
 import com.esri.android.map.MapView;
 import com.esri.android.map.event.OnStatusChangedListener;
-import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
-import com.esri.core.geometry.SpatialReference;
+import com.esri.core.geometry.Polygon;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
-
 import java.io.IOException;
 import java.util.ArrayList;
-
-import jsqlite.Exception;
 
 /**
  * Created by Crilly on 24/06/2016.
@@ -42,6 +37,10 @@ public class Query1Activity extends Activity {
     DatabaseAccess database = null;
     ArrayList<Point> points;
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
+    GraphicsLayer layer = new GraphicsLayer();
+    Point p;
+    ArrayList<Polygon> polygons;
+    SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +54,10 @@ public class Query1Activity extends Activity {
             e.printStackTrace();
         }
 
+        /**Trovo i centroidi**/
         points = database.queryComuniNearbyCentroid();
-        GraphicsLayer layer = new GraphicsLayer();
-        Point p;
 
-        //aggiungo i punti al layer
+        //aggiungo i punti al layer di queryComuniNearByCentroid
         for (int i = 0; i < points.size(); i++) {
 
             p = points.get(i);
@@ -67,6 +65,20 @@ public class Query1Activity extends Activity {
         }
         mMapView.addLayer(layer);
 
+        /**Trovo i poligoni***/
+        polygons = database.queryComuniNearbyPolygon();
+
+        Graphic [] graphics=new Graphic[polygons.size()];
+
+        //aggiungo i punti al layer di queryComuniNearByPolygon
+        GraphicsLayer layer_poly=new GraphicsLayer();
+        for (int i = 0; i <polygons.size() ; i++) {
+
+            graphics[i]=new Graphic(polygons.get(i),sms_poly);
+        }
+        layer_poly.addGraphics(graphics);
+
+        mMapView.addLayer(layer_poly);
 
         if (savedInstanceState != null) {
             mMapState = savedInstanceState.getString(KEY_MAPSTATE, null);
@@ -78,7 +90,6 @@ public class Query1Activity extends Activity {
             // Too early to set map state here, as the map is not initialized;
             // at this point restoreState would be ignored.
         }
-
 
         mMapView.setOnStatusChangedListener(new OnStatusChangedListener() {
             private static final long serialVersionUID = 1L;
@@ -93,16 +104,9 @@ public class Query1Activity extends Activity {
                     if ((mMapState != null) && (!mMapState.isEmpty())) {
                         mMapView.restoreState(mMapState);
                     }
-
-
                 }
-
             }
         });
-
-
-
-
     }
 
     @Override
@@ -129,7 +133,6 @@ public class Query1Activity extends Activity {
             mMapView.unpause();
         }
     }
-
 
 
     @Override
