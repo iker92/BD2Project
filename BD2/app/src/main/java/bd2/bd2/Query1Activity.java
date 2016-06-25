@@ -87,9 +87,6 @@ public class Query1Activity extends Activity {
             mResultSnippet = savedInstanceState.getString(KEY_RESULT_SNIPPET, null);
             mResultX = savedInstanceState.getDouble(KEY_RESULT_X, Double.NaN);
             mResultY = savedInstanceState.getDouble(KEY_RESULT_Y, Double.NaN);
-
-            // Too early to set map state here, as the map is not initialized;
-            // at this point restoreState would be ignored.
         }
 
         mMapView.setOnStatusChangedListener(new OnStatusChangedListener() {
