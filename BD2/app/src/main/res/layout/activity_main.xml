@@ -6,26 +6,22 @@
     tools:context="bd2.bd2.MainActivity"
     >
 
-    <TextView
-        android:id="@+id/textView"
-        android:text="Scegli la query:"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
 
     <Spinner
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/spinner"
-        android:layout_below="@id/textView"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentStart="true"/>
 
-        />
+
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/spinner"/>
-
+        android:layout_below="@id/spinner"
+        android:id="@+id/button"
+        android:text="Invio"/>
 
 
 </RelativeLayout>
