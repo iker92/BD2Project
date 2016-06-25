@@ -1,6 +1,7 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import com.esri.android.map.GraphicsLayer;
@@ -107,6 +108,12 @@ public class Query1Activity extends Activity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setContentView(R.layout.second_layout);
     }
 
     @Override
