@@ -13,10 +13,8 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
-
 import java.io.IOException;
 import java.util.ArrayList;
-
 import jsqlite.Exception;
 
 /**
@@ -40,8 +38,8 @@ public class Query2Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    ArrayList<Polygon> polygons;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    /*ArrayList<Polygon> polygons;
+    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +53,7 @@ public class Query2Activity extends Activity {
             e.printStackTrace();
         }
 
-        polygons = database.queryComuniNearbyPolygon();
+        /*polygons = database.queryComuniNearbyPolygon();
 
         Graphic [] graphics=new Graphic[polygons.size()];
 
@@ -66,7 +64,7 @@ public class Query2Activity extends Activity {
         }
         layer_poly.addGraphics(graphics);
 
-        mMapView.addLayer(layer_poly);
+        mMapView.addLayer(layer_poly);*/
 
 
 
@@ -77,8 +75,6 @@ public class Query2Activity extends Activity {
             mResultX = savedInstanceState.getDouble(KEY_RESULT_X, Double.NaN);
             mResultY = savedInstanceState.getDouble(KEY_RESULT_Y, Double.NaN);
 
-            // Too early to set map state here, as the map is not initialized;
-            // at this point restoreState would be ignored.
         }
 
 
@@ -95,16 +91,9 @@ public class Query2Activity extends Activity {
                     if ((mMapState != null) && (!mMapState.isEmpty())) {
                         mMapView.restoreState(mMapState);
                     }
-
-
                 }
-
             }
         });
-
-
-
-
     }
 
     @Override
@@ -131,8 +120,6 @@ public class Query2Activity extends Activity {
             mMapView.unpause();
         }
     }
-
-
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
