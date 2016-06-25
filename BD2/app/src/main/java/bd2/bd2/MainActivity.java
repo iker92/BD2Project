@@ -22,6 +22,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 Spinner spinner;
     DatabaseAccess databaseAccess = null;
     List<String> queryes=new ArrayList<String>();
+    static int position;
 
 
     @Override
@@ -43,8 +44,25 @@ Spinner spinner;
 
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, Query1Activity.class);
-                startActivity(i);
+                Intent intent = null;
+                switch(position)
+                {
+                    case 1:
+                        intent = new Intent(MainActivity.this, Query1Activity.class);
+
+
+                        break;
+                    case 2:
+                        intent = new Intent(MainActivity.this, Query2Activity.class);
+
+
+                        break;
+                }
+                if(intent != null)
+                {
+                    startActivity(intent);
+                }
+
             }
         });
         spinner = (Spinner) findViewById(R.id.spinner);
@@ -97,25 +115,9 @@ Spinner spinner;
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-        Intent intent = null;
-        int position=adapterView.getSelectedItemPosition();
-        switch(position)
-        {
-            case 1:
-                intent = new Intent(MainActivity.this, Query1Activity.class);
 
+        position=adapterView.getSelectedItemPosition();
 
-                break;
-            case 2:
-                intent = new Intent(MainActivity.this, Query2Activity.class);
-
-
-                break;
-        }
-        if(intent != null)
-        {
-            startActivity(intent);
-        }
 
     }
 
