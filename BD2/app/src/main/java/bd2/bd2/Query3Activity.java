@@ -1,6 +1,7 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -47,6 +48,12 @@ public class Query3Activity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.second_layout);
         mMapView = (MapView) findViewById(R.id.map);
+        Intent intent = getIntent();
+        String name="";
+        if (intent != null) {
+            name = intent.getStringExtra("name");
+            // and get whatever type user account id is
+        }
 
         try {
             database = DatabaseAccess.getInstance(this);
@@ -54,7 +61,7 @@ public class Query3Activity extends Activity {
             e.printStackTrace();
         }
 
-        array_final = database.queryStradeAttraversoFiumi();
+        array_final = database.queryStradeAttraversoFiumi(name);
 
         Graphic [] graphics=new Graphic[array_final[0].size()];
         Graphic [] graphics1=new Graphic[array_final[1].size()];

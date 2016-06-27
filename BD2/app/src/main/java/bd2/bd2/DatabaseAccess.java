@@ -428,7 +428,7 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
         return polygon;
     }
 
-    public ArrayList<Polyline>[] queryStradeAttraversoFiumi() {
+    public ArrayList<Polyline>[] queryStradeAttraversoFiumi(String name) {
 
         ArrayList<Polyline> fiumi = new ArrayList<>();
         ArrayList<Polyline> fiume_fixed = new ArrayList<>();
@@ -440,12 +440,10 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
         Polyline poly1 = new Polyline();
         Polyline poly2 = new Polyline();
 
-        String fiume = "Fiume Flumendosa";
-        String intersezione_strade = "";
 
         //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
-        String query = "SELECT ASText(fiumiTorrenti_ARC.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+fiume+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) ;";
-        String query_fiume = "SELECT ASText(Geometry) from fiumiTorrenti_ARC where nome = '"+fiume+"';";
+        String query = "SELECT ASText(fiumiTorrenti_ARC.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) ;";
+        String query_fiume = "SELECT ASText(Geometry) from fiumiTorrenti_ARC where nome = '"+name+"';";
         try {
             Stmt stmt = database.prepare(query);
 

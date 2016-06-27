@@ -73,6 +73,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                         break;
                     case 3:
                         intent = new Intent(MainActivity.this, Query3Activity.class);
+                        intent.putExtra("name",name);
                         break;
                 }
                 if(intent != null)
