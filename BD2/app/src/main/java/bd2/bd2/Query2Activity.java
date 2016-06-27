@@ -121,6 +121,8 @@ public class Query2Activity extends Activity {
         }
     }
 
+
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
