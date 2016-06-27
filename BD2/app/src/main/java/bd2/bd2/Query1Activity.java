@@ -53,6 +53,7 @@ public class Query1Activity extends Activity {
         String name="";
         if (intent != null) {
             name = intent.getStringExtra("name");
+            name =name.toUpperCase();
             // and get whatever type user account id is
         }
 
