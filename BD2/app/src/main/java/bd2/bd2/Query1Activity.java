@@ -1,6 +1,7 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -48,6 +49,12 @@ public class Query1Activity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.second_layout);
         mMapView = (MapView) findViewById(R.id.map);
+        Intent intent = getIntent();
+        String name="";
+        if (intent != null) {
+            name = intent.getStringExtra("name");
+            // and get whatever type user account id is
+        }
 
         try {
             database = DatabaseAccess.getInstance(this);
@@ -56,7 +63,7 @@ public class Query1Activity extends Activity {
         }
 
         /**Trovo i centroidi**/
-        points = database.queryComuniNearbyCentroid();
+        points = database.queryComuniNearbyCentroid(name);
 
         //aggiungo i punti al layer di queryComuniNearByCentroid
         for (int i = 0; i < points.size(); i++) {
@@ -67,7 +74,7 @@ public class Query1Activity extends Activity {
         mMapView.addLayer(layer);
 
         /**Trovo i poligoni***/
-        polygons = database.queryComuniNearbyPolygon();
+        polygons = database.queryComuniNearbyPolygon(name);
 
         Graphic [] graphics=new Graphic[polygons.size()];
 

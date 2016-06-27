@@ -1,14 +1,18 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,7 +27,9 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     Spinner spinner;
     DatabaseAccess databaseAccess = null;
     List<String> queryes = new ArrayList<>();
+    TextView result_text;
     static int position;
+    private String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +55,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                 Context context = getApplicationContext();
                 CharSequence text = "Nessun elemento selezionato!";
                 int duration = Toast.LENGTH_SHORT;
-
                 switch(position)
                 {
                     case 0:
@@ -57,10 +62,14 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                         toast.show();
                         break;
                     case 1:
+
+
                         intent = new Intent(MainActivity.this, Query1Activity.class);
+                        intent.putExtra("name",name);
                         break;
                     case 2:
                         intent = new Intent(MainActivity.this, Query2Activity.class);
+                        intent.putExtra("name",name);
                         break;
                 }
                 if(intent != null)
@@ -104,6 +113,36 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         spinner.setOnItemSelectedListener(this);
     }
 
+    protected void showInputDialog() {
+
+        // get prompts.xml view
+        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+        View promptView = layoutInflater.inflate(R.layout.inputdialog, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setView(promptView);
+
+        final EditText editText = (EditText) promptView.findViewById(R.id.edittext);
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        name=editText.getText().toString();
+                    }
+                })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create an alert dialog
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+
+
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -118,6 +157,11 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
         position = adapterView.getSelectedItemPosition();
+        if(position!=0){
+
+            showInputDialog();
+        }
+
     }
 
     @Override

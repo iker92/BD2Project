@@ -100,17 +100,13 @@ public class DatabaseAccess {
      * un determinato parco naturale
      **/
 
-public ArrayList<Polygon> [] queryComunibyParchi() {
+public ArrayList<Polygon> [] queryComunibyParchi(String name) {
 
    // String query = "SELECT ASText(ST_GeometryN(DBTComune.Geometry,1))  from DBTComune, sistemaRegionaleParchi where ST_Intersects( ST_GeometryN(DBTComune.Geometry,1) ,sistemaRegionaleParchi.Geometry) AND sistemaRegionaleParchi.nome='Parco Regionale Sulcis';";
 
-    String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='Gennargentu e Golfo di Orosei';";
+    String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='"+name+"';";
    // String query="SELECT ASText(Geometry) from sistemaRegionaleParchi where nome='Gennargentu e Golfo di Orosei';";
 
-    String query1 = "SELECT Hex(ST_AsBinary(Geometry)) from sistemaRegionaleParchi" +
-            " where nome = 'Gennargentu e Golfo di Orosei';";
-
-    String query2="SELECT nome from sistemaRegionaleParchi where nome = 'Gennargentu e Golfo di Orosei';";
     ArrayList<String> multi_line = new ArrayList<>();
     ArrayList<String> multi_parco=new ArrayList<>();
     ArrayList<Polygon>[] polygon = new ArrayList[2];
@@ -251,13 +247,13 @@ public ArrayList<Polygon> [] queryComunibyParchi() {
      * prima query spaziale che rende dei punti che individuano
      * i paesi che toccano i bordi di Decimoputzu
      **/
-    public ArrayList<Point> queryComuniNearbyCentroid() {
+    public ArrayList<Point> queryComuniNearbyCentroid(String name) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("Query Comuni nearby...\n");
 
         String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))), ST_Srid(Geometry), ST_GeometryType(Geometry) from DBTComune" +
-                " where NOME = 'DECIMOPUTZU';";
+                " where NOME = '"+name+"';";
         sb.append("Execute query: ").append(query).append("\n");
         String bufferGeom = "";
         String bufferGeomShort = "";
@@ -275,7 +271,7 @@ public ArrayList<Polygon> [] queryComunibyParchi() {
             bufferGeomShort = bufferGeom;
             if (bufferGeom.length() > 10)
                 bufferGeomShort = bufferGeom.substring(0, 10) + "...";
-            sb.append("\tDecimoputzu polygon buffer geometry in HEX: ").append(bufferGeomShort).append("\n");
+            sb.append("\t"+name+" polygon buffer geometry in HEX: ").append(bufferGeomShort).append("\n");
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -285,16 +281,30 @@ public ArrayList<Polygon> [] queryComunibyParchi() {
         query = "SELECT  NOME , ASText(ST_centroid(ST_GeometryN(Geometry,1))) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry);";
 
         try {
-            sb.append("\tComuni nearby Decimoputzu: \n");
+            sb.append("\tComuni nearby "+name+": \n");
             Stmt stmt = database.prepare(query);
 
             while (stmt.step()) {
-                String name = stmt.column_string(0);
+                String name1 = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
+                String temp=wkt.substring(6);
                 // mettere i punti trovati in un array per poi creare la polyline associata
-                double x = Double.valueOf(wkt.substring(6, 20));
-                double y = Double.valueOf(wkt.substring(20, 34));
-                Point point = new Point(x, y);
+                String[] split =temp.split(" ");
+                String first = split[0];
+
+                String second = split[1];
+                if(second.endsWith("))")){
+                    second=second.substring(0,second.length() -2);
+                }
+                if(second.endsWith(")")){
+                    second=second.substring(0,second.length() -1);
+                }
+
+
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+
+                Point point = new Point();
                 SpatialReference input = SpatialReference.create(3003);
                 SpatialReference output = SpatialReference.create(3857);
                 point.setXY(x, y);
@@ -316,7 +326,7 @@ public ArrayList<Polygon> [] queryComunibyParchi() {
      * seconda query spaziale che rende i poligoni che individuano
      * i paesi che toccano i bordi di Decimoputzu
      **/
-    public ArrayList<Polygon> queryComuniNearbyPolygon() {
+    public ArrayList<Polygon> queryComuniNearbyPolygon(String name) {
 
         Double x, y;
         ArrayList<Polygon>polygon = new ArrayList<>();
@@ -325,7 +335,7 @@ public ArrayList<Polygon> [] queryComunibyParchi() {
 
 
         String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))), ST_Srid(Geometry), ST_GeometryType(Geometry) from DBTComune" +
-                " where NOME = 'DECIMOPUTZU';";
+                " where NOME = '"+name+"';";
         sb.append("Execute query: ").append(query).append("\n");
         String bufferGeom = "";
         String bufferGeomShort = "";
@@ -359,7 +369,7 @@ public ArrayList<Polygon> [] queryComunibyParchi() {
 
             while (stmt.step()) {
 
-                String name = stmt.column_string(0);
+                String name1 = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
                 multi_line.add(wkt);
             }

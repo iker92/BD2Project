@@ -1,6 +1,7 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -47,6 +48,12 @@ public class Query2Activity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.second_layout);
         mMapView = (MapView) findViewById(R.id.map);
+        Intent intent = getIntent();
+        String name="";
+        if (intent != null) {
+            name = intent.getStringExtra("name");
+            // and get whatever type user account id is
+        }
 
         try {
             database = DatabaseAccess.getInstance(this);
@@ -54,7 +61,7 @@ public class Query2Activity extends Activity {
             e.printStackTrace();
         }
 
-        polygons=database.queryComunibyParchi();
+        polygons=database.queryComunibyParchi(name);
         Graphic [] graphics=new Graphic[polygons[0].size()];
 
         GraphicsLayer layer_poly=new GraphicsLayer();
