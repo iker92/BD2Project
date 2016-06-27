@@ -38,8 +38,9 @@ public class Query2Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    /*ArrayList<Polygon> polygons;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);*/
+    ArrayList<Polygon> polygons []=new ArrayList[2];
+    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms1 = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +54,27 @@ public class Query2Activity extends Activity {
             e.printStackTrace();
         }
 
-        /*polygons = database.queryComuniNearbyPolygon();
-
-        Graphic [] graphics=new Graphic[polygons.size()];
+        polygons=database.queryComunibyParchi();
+        Graphic [] graphics=new Graphic[polygons[0].size()];
 
         GraphicsLayer layer_poly=new GraphicsLayer();
-        for (int i = 0; i <polygons.size() ; i++) {
+        for (int i = 0; i <polygons[0].size() ; i++) {
 
-            graphics[i]=new Graphic(polygons.get(i),sms);
+            graphics[i]=new Graphic(polygons[0].get(i),sms);
         }
-        layer_poly.addGraphics(graphics);
 
-        mMapView.addLayer(layer_poly);*/
+        Graphic [] graphics1=new Graphic[polygons[1].size()];
+
+
+        for (int i = 0; i <polygons[1].size() ; i++) {
+
+            graphics1[i]=new Graphic(polygons[1].get(i),sms1);
+        }
+
+        layer_poly.addGraphics(graphics);
+        layer_poly.addGraphics(graphics1);
+
+        mMapView.addLayer(layer_poly);
 
 
 
