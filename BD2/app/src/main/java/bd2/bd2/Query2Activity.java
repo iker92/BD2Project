@@ -38,8 +38,8 @@ public class Query2Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    /*ArrayList<Polygon> polygons;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);*/
+    ArrayList<Polygon> polygons;
+    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +53,7 @@ public class Query2Activity extends Activity {
             e.printStackTrace();
         }
 
-        /*polygons = database.queryComuniNearbyPolygon();
+        polygons=database.queryComunibyParchi();
 
         Graphic [] graphics=new Graphic[polygons.size()];
 
@@ -64,7 +64,7 @@ public class Query2Activity extends Activity {
         }
         layer_poly.addGraphics(graphics);
 
-        mMapView.addLayer(layer_poly);*/
+        mMapView.addLayer(layer_poly);
 
 
 

@@ -10,6 +10,8 @@ package bd2.bd2;
         import android.database.sqlite.SQLiteOpenHelper;
         import android.util.Log;
 
+        import com.esri.core.geodatabase.ShapefileFeature;
+        import com.esri.core.geodatabase.ShapefileFeatureTable;
         import com.esri.core.geometry.GeometryEngine;
         import com.esri.core.geometry.Point;
         import com.esri.core.geometry.Polygon;
@@ -35,6 +37,7 @@ public class DatabaseAccess {
     private static DatabaseAccess instance;
     private static String DB_NAME = "dbProva.sqlite";
     private static String DB_PATH = "/data/data/bd2.bd2/databases";
+
 
 
     /**
@@ -102,6 +105,98 @@ public class DatabaseAccess {
             this.database.close();
         }
     }
+
+    /**
+     * query spaziale che rende i comuni che toccano
+     * un determinato parco naturale
+     **/
+
+public ArrayList<Polygon> queryComunibyParchi() {
+
+   // String query = "SELECT ASText(ST_GeometryN(DBTComune.Geometry,1))  from DBTComune, sistemaRegionaleParchi where ST_Intersects( ST_GeometryN(DBTComune.Geometry,1) ,sistemaRegionaleParchi.Geometry) AND sistemaRegionaleParchi.nome='Parco Regionale Sulcis';";
+
+    String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1))  FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='Gennargentu e Golfo di Orosei';";
+   // String query="SELECT ASText(Geometry) from sistemaRegionaleParchi where nome='Gennargentu e Golfo di Orosei';";
+
+    String query1 = "SELECT Hex(ST_AsBinary(Geometry)) from sistemaRegionaleParchi" +
+            " where nome = 'Gennargentu e Golfo di Orosei';";
+
+    String query2="SELECT nome from sistemaRegionaleParchi where nome = 'Gennargentu e Golfo di Orosei';";
+    ArrayList<String> multi_line = new ArrayList<>();
+    ArrayList<Polygon> polygon=new ArrayList<>();
+    StringBuilder sb = new StringBuilder();
+    Double x;
+    Double y;
+    try {
+        sb.append("\tComuni che toccano Parco Regionale Sulcis: \n");
+        Stmt stmt = database.prepare(query);
+
+        while (stmt.step()) {
+            String wkt = stmt.column_string(0);
+           /* String wkt = stmt.column_string(0);*/
+            multi_line.add(wkt);
+        }
+        stmt.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    for (int i = 0; i < multi_line.size(); i++) {
+
+        String temp= (multi_line.get(i));
+        // String query_multi = "SELECT ST_AsText(ST_LineMerge(ST_SnapToGrid(ST_GeomFromText('"+ multi_line.get(i) + "'),0.1)));";
+
+
+
+
+
+        // mettere i punti trovati in un array per poi creare la polyline associata
+        String pointStr = String.valueOf(multi_line.get(i).subSequence(9,multi_line.get(i).length()));
+
+
+        String[] split_comma = pointStr.split("\\s*,\\s*");
+
+        Polygon polygon1 = new Polygon();
+        for (int j = 0; j < split_comma.length; j++) {
+
+            String[] split = split_comma[j].split(" ");
+            String first = split[0];
+
+            String second = split[1];
+            if(second.endsWith("))")){
+                second=second.substring(0,second.length() -2);
+            }
+            if(second.endsWith(")")){
+                second=second.substring(0,second.length() -1);
+            }
+
+
+            x = Double.parseDouble(first);
+            y = Double.parseDouble(second);
+
+            Point point = new Point();
+            SpatialReference input = SpatialReference.create(3003);
+            SpatialReference output = SpatialReference.create(3857);
+            point.setXY(x, y);
+            Point webPoint = (Point) GeometryEngine.project(point, input, output);
+            if (j == 0) {
+                polygon1.startPath(webPoint);
+            } else {
+                polygon1.lineTo(webPoint);
+            }
+
+        }
+
+        polygon.add(polygon1);
+
+        //polyline.add(point_result);
+
+
+
+    }
+    return polygon;
+
+}
+
 
     /**
      * prima query spaziale che rende dei punti che individuano
@@ -177,6 +272,7 @@ public class DatabaseAccess {
         ArrayList<Polygon>polygon = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         sb.append("Query Comuni nearby...\n");
+
 
         String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))), ST_Srid(Geometry), ST_GeometryType(Geometry) from DBTComune" +
                 " where NOME = 'DECIMOPUTZU';";
