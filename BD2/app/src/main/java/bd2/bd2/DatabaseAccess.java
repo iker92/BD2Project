@@ -29,7 +29,6 @@ public class DatabaseAccess {
     private static final String TAG_SL = TAG + "_JSQLITE";
     private static final boolean ERROR = true;
     private Database database;
-    ArrayList<Point> point_result = new ArrayList<>();
     private static DatabaseAccess instance;
     private static String DB_NAME = "dbProva.sqlite";
     private static String DB_PATH = "/data/data/bd2.bd2/databases";
@@ -252,6 +251,7 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
      **/
     public ArrayList<Point> queryComuniNearbyCentroid(String name) {
 
+        ArrayList<Point> point_result = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         sb.append("Query Comuni nearby...\n");
 
