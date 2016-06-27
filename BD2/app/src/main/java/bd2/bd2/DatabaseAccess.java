@@ -11,13 +11,16 @@ package bd2.bd2;
         import com.esri.core.geometry.GeometryEngine;
         import com.esri.core.geometry.Point;
         import com.esri.core.geometry.Polygon;
+        import com.esri.core.geometry.Polyline;
         import com.esri.core.geometry.SpatialReference;
         import java.io.File;
         import java.io.FileOutputStream;
         import java.io.IOException;
         import java.io.InputStream;
         import java.io.OutputStream;
+        import java.lang.reflect.Array;
         import java.util.ArrayList;
+        import java.util.HashMap;
 
 
 public class DatabaseAccess {
@@ -423,6 +426,160 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
         sb.append("Done...\n");
 
         return polygon;
+    }
+
+    public ArrayList<Polyline>[] queryStradeAttraversoFiumi() {
+
+        ArrayList<Polyline> fiumi = new ArrayList<>();
+        ArrayList<Polyline> fiume_fixed = new ArrayList<>();
+        ArrayList<Polyline> array_final[] = new ArrayList[2];
+        ArrayList<String> multi_line = new ArrayList<>();
+        ArrayList<String> multi_line_fiumi = new ArrayList<>();
+        array_final[0] = new ArrayList<>();
+        array_final[1] = new ArrayList<>();
+        Polyline poly1 = new Polyline();
+        Polyline poly2 = new Polyline();
+
+        String fiume = "Fiume Flumendosa";
+        String intersezione_strade = "";
+
+        //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
+        String query = "SELECT ASText(fiumiTorrenti_ARC.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+fiume+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) ;";
+        String query_fiume = "SELECT ASText(Geometry) from fiumiTorrenti_ARC where nome = '"+fiume+"';";
+        try {
+            Stmt stmt = database.prepare(query);
+
+            while (stmt.step()) {
+                String wkt = stmt.column_string(0);
+                //fiume = stmt.column_string(1);
+                //strada = stmt.column_string(1);
+                multi_line.add(wkt);
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+            for (int i = 0; i < multi_line.size(); i++) {
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                String pointStr = String.valueOf(multi_line.get(i).subSequence(11, multi_line.get(i).length()));
+
+                String[] split_comma = pointStr.split("\\s*,\\s*");
+            for (int j = 0; j < split_comma.length; j++) {
+
+                String[] split = split_comma[j].split(" ");
+                String first = split[0];
+                String second = split[1];
+
+                if (second.endsWith("))")) {
+                    second = second.substring(0, second.length() - 2);
+                }
+                if (second.endsWith(")")) {
+                    second = second.substring(0, second.length() - 1);
+                }
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+                Point point = new Point(x, y);
+                SpatialReference input = SpatialReference.create(3003);
+                SpatialReference output = SpatialReference.create(3857);
+                Point webPoint = (Point) GeometryEngine.project(point, input, output);
+                if(j==0)
+                {
+                    poly1.startPath(webPoint);
+
+                }
+                else {
+                    poly1.lineTo(webPoint);
+
+                }
+
+
+
+
+            }
+                fiumi.add(poly1);
+        }
+
+
+
+
+
+
+
+        try{
+            Stmt stmt2 = database.prepare(query_fiume);
+            while (stmt2.step()) {
+                String wkt = stmt2.column_string(0);
+                //fiume = stmt.column_string(1);
+                //strada = stmt.column_string(1);
+                multi_line_fiumi.add(wkt);
+            }
+            stmt2.close();
+        }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+
+            for (int i = 0; i < multi_line_fiumi.size(); i++) {
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                String pointStr = String.valueOf(multi_line_fiumi.get(i).subSequence(11, multi_line_fiumi.get(i).length()));
+
+                String[] split_comma = pointStr.split("\\s*,\\s*");
+
+                for (int j = 0; j < split_comma.length; j++) {
+
+                    String[] split = split_comma[j].split(" ");
+                    String first = split[0];
+                    String second = split[1];
+
+                    if (second.endsWith("))")) {
+                        second = second.substring(0, second.length() - 2);
+                    }
+                    if (second.endsWith(")")) {
+                        second = second.substring(0, second.length() - 1);
+                    }
+
+                    // mettere i punti trovati in un array per poi creare la polyline associata
+                    double x = Double.parseDouble(first);
+                    double y = Double.parseDouble(second);
+                    Point point = new Point(x, y);
+                    SpatialReference input = SpatialReference.create(3003);
+                    SpatialReference output = SpatialReference.create(3857);
+                    Point webPoint = (Point) GeometryEngine.project(point, input, output);
+                    if(i!=0 && i%2==0)
+                    {
+
+                    }
+                    else{
+                        if(i==0)
+                        {
+                            poly2.startPath(webPoint);
+
+                        }
+                        else {
+                            poly2.lineTo(webPoint);
+
+                        }
+                    }
+
+                }
+                fiume_fixed.add(poly2);
+            }
+
+
+
+
+        array_final[0] = fiumi;
+        array_final[1] = fiume_fixed;
+
+        return array_final;
     }
 }
 
