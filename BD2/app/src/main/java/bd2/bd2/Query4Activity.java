@@ -5,20 +5,22 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
+
 import com.esri.android.map.GraphicsLayer;
 import com.esri.android.map.MapView;
 import com.esri.android.map.event.OnStatusChangedListener;
-import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
+import com.esri.core.geometry.Polyline;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by Crilly on 24/06/2016.
+ * Created by Alessio on 28/06/2016.
  */
-public class Query1Activity extends Activity {
+public class Query4Activity extends Activity {
 
     MapView mMapView;
     private static final String KEY_MAPSTATE = "mapState";
@@ -37,11 +39,8 @@ public class Query1Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    ArrayList<Point> points;
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
-    GraphicsLayer layer = new GraphicsLayer();
-    Point p;
-    ArrayList<Polygon> polygons;
+    Object array_final[] = new Object [2];
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
 
     @Override
@@ -63,31 +62,30 @@ public class Query1Activity extends Activity {
             e.printStackTrace();
         }
 
-        /**Trovo i centroidi**/
-        points = database.queryComuniNearbyCentroid(name);
+        array_final =database.queryComuneStrade(name);
 
-        //aggiungo i punti al layer di queryComuniNearByCentroid
-        for (int i = 0; i < points.size(); i++) {
+        Polygon polygon=(Polygon) array_final[0];
+        ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[1];
 
-            p = points.get(i);
-            layer.addGraphic(new Graphic(p, sms));
-        }
-        mMapView.addLayer(layer);
 
-        /**Trovo i poligoni***/
-        polygons = database.queryComuniNearbyPolygon(name);
 
-        Graphic [] graphics=new Graphic[polygons.size()];
+        Graphic graphicPolygon=new Graphic(polygon,sms);
+        Graphic [] graphics=new Graphic[polyline.size()];
 
         //aggiungo i punti al layer di queryComuniNearByPolygon
-        GraphicsLayer layer_poly=new GraphicsLayer();
-        for (int i = 0; i <polygons.size() ; i++) {
+        GraphicsLayer layer_intersezioni=new GraphicsLayer();
+        GraphicsLayer layer_poligono=new GraphicsLayer();
 
-            graphics[i]=new Graphic(polygons.get(i),sms_poly);
+        layer_poligono.addGraphic(graphicPolygon);
+        for (int i = 0; i <polyline.size() ; i++) {
+
+            graphics[i]=new Graphic(polyline.get(i),sms_poly);
         }
-        layer_poly.addGraphics(graphics);
+        layer_intersezioni.addGraphics(graphics);
 
-        mMapView.addLayer(layer_poly);
+        mMapView.addLayer(layer_poligono);
+        mMapView.addLayer(layer_intersezioni);
+
 
         if (savedInstanceState != null) {
             mMapState = savedInstanceState.getString(KEY_MAPSTATE, null);
@@ -154,4 +152,7 @@ public class Query1Activity extends Activity {
         // Save the current state of the map before the activity is destroyed.
         outState.putString(KEY_MAPSTATE, mMapState);
     }
+
+
+
 }

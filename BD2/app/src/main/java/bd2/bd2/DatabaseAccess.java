@@ -21,6 +21,7 @@ package bd2.bd2;
         import java.lang.reflect.Array;
         import java.util.ArrayList;
         import java.util.HashMap;
+        import java.util.Objects;
 
 
 public class DatabaseAccess {
@@ -29,6 +30,7 @@ public class DatabaseAccess {
     private static final String TAG_SL = TAG + "_JSQLITE";
     private static final boolean ERROR = true;
     private Database database;
+    ArrayList<Point> point_result = new ArrayList<>();
     private static DatabaseAccess instance;
     private static String DB_NAME = "dbProva.sqlite";
     private static String DB_PATH = "/data/data/bd2.bd2/databases";
@@ -96,6 +98,166 @@ public class DatabaseAccess {
             this.database.close();
         }
     }
+
+    /**
+     * query spaziale che rende le strade passanti in
+     * un determinato comune
+     **/
+
+    public Object [] queryComuneStrade(String name){
+
+        Object [] array_final=new Object[2];
+        array_final[0]=new Polygon();
+        array_final[1]=new ArrayList<Polyline>();
+        Polyline poly2 = new Polyline();
+        Polygon polygon=new Polygon();
+        ArrayList<String> multi_line=new ArrayList<>();
+        ArrayList<Polyline> polyLine=new ArrayList<>();
+
+
+        //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
+        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune JOIN reteStradale ON ((DBTComune.NOME = '"+name+"') AND (ST_Intersects(GeometryN(DBTComune.Geometry,1), GeometryN(reteStradale.Geometry,1)))) ;";
+        String query_comune = "SELECT ASText(GeometryN(Geometry,1)) from DBTComune where nome = '"+name+"';";
+        try {
+            Stmt stmt = database.prepare(query);
+
+            while (stmt.step()) {
+                String wkt = stmt.column_string(0);
+                //fiume = stmt.column_string(1);
+                //strada = stmt.column_string(1);
+                multi_line.add(wkt);
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        for (int i = 0; i < multi_line.size(); i++) {
+
+            // mettere i punti trovati in un array per poi creare la polyline associata
+            String pointStr = String.valueOf(multi_line.get(i).subSequence(11, multi_line.get(i).length()));
+
+            String[] split_comma = pointStr.split("\\s*,\\s*");
+            for (int j = 0; j < split_comma.length; j++) {
+
+                String[] split = split_comma[j].split(" ");
+                String first = split[0];
+                String second = split[1];
+
+                if (second.endsWith("))")) {
+                    second = second.substring(0, second.length() - 2);
+                }
+                if (second.endsWith(")")) {
+                    second = second.substring(0, second.length() - 1);
+                }
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+                Point point = new Point(x, y);
+                SpatialReference input = SpatialReference.create(3003);
+                SpatialReference output = SpatialReference.create(3857);
+                Point webPoint = (Point) GeometryEngine.project(point, input, output);
+                if(j==0)
+                {
+                    poly2.startPath(webPoint);
+
+                }
+                else {
+                    poly2.lineTo(webPoint);
+
+                }
+
+
+
+
+            }
+
+            polyLine.add(poly2);
+        }
+
+
+
+
+String wkt="";
+
+
+        try{
+            Stmt stmt2 = database.prepare(query_comune);
+            while (stmt2.step()) {
+                wkt = stmt2.column_string(0);
+                //fiume = stmt.column_string(1);
+                //strada = stmt.column_string(1);
+
+            }
+            stmt2.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+
+
+            // mettere i punti trovati in un array per poi creare la polyline associata
+            String pointStr = wkt.substring(9,wkt.length());
+
+            String[] split_comma = pointStr.split("\\s*,\\s*");
+
+            for (int j = 0; j < split_comma.length; j++) {
+
+                String[] split = split_comma[j].split(" ");
+                String first = split[0];
+                String second = split[1];
+
+                if (second.endsWith("))")) {
+                    second = second.substring(0, second.length() - 2);
+                }
+                if (second.endsWith(")")) {
+                    second = second.substring(0, second.length() - 1);
+                }
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+                Point point = new Point(x, y);
+                SpatialReference input = SpatialReference.create(3003);
+                SpatialReference output = SpatialReference.create(3857);
+                Point webPoint = (Point) GeometryEngine.project(point, input, output);
+
+
+                    if(j==0)
+                    {
+                        polygon.startPath(webPoint);
+
+                    }
+                    else {
+                        polygon.lineTo(webPoint);
+
+                    }
+
+        }
+
+
+
+
+        array_final[0] =polygon;
+        array_final[1] = polyLine;
+
+
+
+        return array_final;
+    }
+
+
+
+
+
+
+
+
 
     /**
      * query spaziale che rende i comuni che toccano
@@ -251,7 +413,6 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
      **/
     public ArrayList<Point> queryComuniNearbyCentroid(String name) {
 
-        ArrayList<Point> point_result = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         sb.append("Query Comuni nearby...\n");
 
