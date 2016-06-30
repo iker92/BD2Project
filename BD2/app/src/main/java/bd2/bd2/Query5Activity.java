@@ -41,9 +41,9 @@ public class Query5Activity extends Activity {
 
     DatabaseAccess database = null;
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
-    Object array_final[] = new Object [3];
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
     SimpleMarkerSymbol sms_polygono = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    Object array_final[] = new Object [3];
 
 
     @Override
@@ -55,8 +55,6 @@ public class Query5Activity extends Activity {
         String name="";
         if (intent != null) {
             name = intent.getStringExtra("name");
-            //name=name.toUpperCase();
-            // and get whatever type user account id is
         }
 
         try {
@@ -65,23 +63,21 @@ public class Query5Activity extends Activity {
             e.printStackTrace();
         }
 
-        array_final =database.queryStradeComuniParco(name);
+        array_final = database.queryStradeComuniParco(name);
 
         Polygon polygon=(Polygon) array_final[0];
-        ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[1];
-        ArrayList<Polygon> polygons=(ArrayList<Polygon>) array_final[2];
+        ArrayList<Polyline> polyline = (ArrayList<Polyline>)array_final[1];
+        ArrayList<Polygon> polygons = (ArrayList<Polygon>) array_final[2];
 
 
+        Graphic graphicPolygon = new Graphic(polygon,sms);
+        Graphic [] graphics = new Graphic[polyline.size()];
+        Graphic [] graphicsPolygono =  new Graphic[polygons.size()];
 
-        Graphic graphicPolygon=new Graphic(polygon,sms);
-        Graphic [] graphics=new Graphic[polyline.size()];
-        Graphic [] graphicsPolygono=  new Graphic[polygons.size()];
-
-        //aggiungo i punti al layer di queryComuniNearByPolygon
-        GraphicsLayer layer_intersezioni=new GraphicsLayer();
-        GraphicsLayer layer_poligono=new GraphicsLayer();
-
+        GraphicsLayer layer_intersezioni = new GraphicsLayer();
+        GraphicsLayer layer_poligono = new GraphicsLayer();
         layer_poligono.addGraphic(graphicPolygon);
+
         for (int i = 0; i <polyline.size() ; i++) {
 
             graphics[i]=new Graphic(polyline.get(i),sms_poly);
