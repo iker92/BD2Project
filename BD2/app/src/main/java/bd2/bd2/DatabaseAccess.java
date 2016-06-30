@@ -31,7 +31,7 @@ public class DatabaseAccess {
     private static final boolean ERROR = true;
     private Database database;
     private static DatabaseAccess instance;
-    private static String DB_NAME = "dbProva.sqlite";
+    private static String DB_NAME = "dbProva1.sqlite";
     private static String DB_PATH = "/data/data/bd2.bd2/databases";
 
     /**
@@ -48,7 +48,7 @@ public class DatabaseAccess {
             }
         }
 
-        InputStream inputStream = context.getAssets().open("databases/dbProva.sqlite");
+        InputStream inputStream = context.getAssets().open("databases/dbProva1.sqlite");
         copyDatabase(inputStream, DB_PATH + File.separator + DB_NAME);
         database = new Database();
 
@@ -234,13 +234,22 @@ public class DatabaseAccess {
         array_final[0]=new ArrayList<Polygon>();
         array_final[1]=new ArrayList<Polyline>();
         ArrayList<Polygon> polygon_res=new ArrayList<>();
+
         ArrayList<String> poly=new ArrayList<>();
         ArrayList<String> multi_line=new ArrayList<>();
         ArrayList<Polyline> polyLine=new ArrayList<>();
 
 
         //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
-        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune JOIN reteStradale ON ((DBTComune.NOME = '"+name+"') AND (ST_Intersects(GeometryN(DBTComune.Geometry,1), GeometryN(reteStradale.Geometry,1)))) ;";
+        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune,reteStradale WHERE " +
+                "DBTComune.NOME = '"+name+"' AND ST_Intersects(GeometryN(DBTComune.Geometry,1), GeometryN(reteStradale.Geometry,1)) " +
+                "AND DBTComune.ROWID IN" +
+               " (SELECT pkid"+
+                " FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(reteStradale.Geometry) AND" +
+                "     ymin <= MbrMaxY(reteStradale.Geometry) AND" +
+                "     xmax >= MbrMinX(reteStradale.Geometry) AND" +
+                "     ymax >= MbrMinY(reteStradale.Geometry))"+
+                " GROUP BY reteStradale.PK_UID;";
         String query_comune = "SELECT ASText(GeometryN(Geometry,1)) from DBTComune where nome = '"+name+"';";
         try {
             Stmt stmt = database.prepare(query);
@@ -537,7 +546,14 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
 
    // String query = "SELECT ASText(ST_GeometryN(DBTComune.Geometry,1))  from DBTComune, sistemaRegionaleParchi where ST_Intersects( ST_GeometryN(DBTComune.Geometry,1) ,sistemaRegionaleParchi.Geometry) AND sistemaRegionaleParchi.nome='Parco Regionale Sulcis';";
 
-    String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='"+name+"';";
+    String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+            "AND comune.ROWID IN " +
+            "(SELECT pkid " +
+            "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
+            "ymin <= MbrMaxY(parchi.Geometry) AND " +
+            "xmax >= MbrMinX(parchi.Geometry) AND " +
+            "ymax >= MbrMinY(parchi.Geometry)) " +
+            "GROUP BY comune.PK_UID;";
    // String query="SELECT ASText(Geometry) from sistemaRegionaleParchi where nome='Gennargentu e Golfo di Orosei';";
 
     ArrayList<String> multi_line = new ArrayList<>();
@@ -668,7 +684,14 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
             sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
 
-        query = "SELECT NOME, ASText(ST_GeometryN(Geometry,1)) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry);";
+        query = "SELECT NOME, ASText(ST_GeometryN(Geometry,1)) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry)"+
+                "AND DBTComune.ROWID IN" +
+                " (SELECT pkid"+
+                " FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(ST_GeomFromWKB(x'" + bufferGeom + "')) AND" +
+                "     ymin <= MbrMaxY(ST_GeomFromWKB(x'" + bufferGeom + "')) AND" +
+                "     xmax >= MbrMinX(ST_GeomFromWKB(x'" + bufferGeom + "')) AND" +
+                "     ymax >= MbrMinY(ST_GeomFromWKB(x'" + bufferGeom + "')))"+
+                " GROUP BY DBTComune.PK_UID;";
         ArrayList<String> multi_line = new ArrayList<>();
 
         try {
@@ -701,7 +724,14 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
         array_final[0] = new ArrayList<>();
         array_final[1] = new ArrayList<>();
 
-        String query = "SELECT ASText(fiumiTorrenti_ARC.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) ;";
+        String query = "SELECT ASText(fiumiTorrenti_ARC.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) " +
+                "AND reteStradale.ROWID IN" +
+        " (SELECT pkid"+
+                " FROM idx_reteStradale_geometry WHERE xmin <= MbrMaxX(fiumiTorrenti_ARC.Geometry) AND" +
+                "     ymin <= MbrMaxY(fiumiTorrenti_ARC.Geometry) AND" +
+                "     xmax >= MbrMinX(fiumiTorrenti_ARC.Geometry) AND" +
+                "     ymax >= MbrMinY(fiumiTorrenti_ARC.Geometry))"+
+                " GROUP BY reteStradale.PK_UID;";
         String query_fiume = "SELECT ASText(Geometry) from fiumiTorrenti_ARC where nome = '"+name+"';";
 
         try {
