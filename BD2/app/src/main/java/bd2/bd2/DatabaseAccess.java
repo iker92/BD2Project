@@ -30,7 +30,6 @@ public class DatabaseAccess {
     private static final String TAG_SL = TAG + "_JSQLITE";
     private static final boolean ERROR = true;
     private Database database;
-    ArrayList<Point> point_result = new ArrayList<>();
     private static DatabaseAccess instance;
     private static String DB_NAME = "dbProva.sqlite";
     private static String DB_PATH = "/data/data/bd2.bd2/databases";
@@ -99,42 +98,91 @@ public class DatabaseAccess {
         }
     }
 
-    /**
-     * query spaziale che rende le strade passanti in
-     * un determinato comune
-     **/
+    private ArrayList<Point> createPoint(ArrayList<String> punti) {
+        ArrayList<Point> point_result = new ArrayList<>();
 
-    public Object [] queryComuneStrade(String name){
-
-        Object [] array_final=new Object[2];
-        array_final[0]=new Polygon();
-        array_final[1]=new ArrayList<Polyline>();
-        Polyline poly2 = new Polyline();
-        Polygon polygon=new Polygon();
-        ArrayList<String> multi_line=new ArrayList<>();
-        ArrayList<Polyline> polyLine=new ArrayList<>();
+        for (int i = 0; i < punti.size(); i++) {
 
 
-        //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
-        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune JOIN reteStradale ON ((DBTComune.NOME = '"+name+"') AND (ST_Intersects(GeometryN(DBTComune.Geometry,1), GeometryN(reteStradale.Geometry,1)))) ;";
-        String query_comune = "SELECT ASText(GeometryN(Geometry,1)) from DBTComune where nome = '"+name+"';";
-        try {
-            Stmt stmt = database.prepare(query);
+            String temp = punti.get(i).substring(6);
+            String[] split = temp.split(" ");
+            String first = split[0];
 
-            while (stmt.step()) {
-                String wkt = stmt.column_string(0);
-                //fiume = stmt.column_string(1);
-                //strada = stmt.column_string(1);
-                multi_line.add(wkt);
+            String second = split[1];
+            if (second.endsWith("))")) {
+                second = second.substring(0, second.length() - 2);
             }
-            stmt.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (second.endsWith(")")) {
+                second = second.substring(0, second.length() - 1);
+            }
+
+
+            double x = Double.parseDouble(first);
+            double y = Double.parseDouble(second);
+
+            Point point = new Point();
+            SpatialReference input = SpatialReference.create(3003);
+            SpatialReference output = SpatialReference.create(3857);
+            point.setXY(x, y);
+            Point webPoint = (Point) GeometryEngine.project(point, input, output);
+
+            point_result.add(webPoint);
         }
+        return point_result;
+    }
+
+    private ArrayList<Polygon> createPolygon(ArrayList<String> poly) {
+        ArrayList<Polygon> polyg=new ArrayList<>();
+        for (int i = 0; i < poly.size(); i++) {
+
+            Polygon polygon=new Polygon();
+            String pointStr = poly.get(i).substring(9, poly.get(i).length());
+
+            String[] split_comma = pointStr.split("\\s*,\\s*");
 
 
+            for (int j = 0; j < split_comma.length; j++) {
+
+                String[] split = split_comma[j].split(" ");
+                String first = split[0];
+                String second = split[1];
+
+                if (second.endsWith("))")) {
+                    second = second.substring(0, second.length() - 2);
+                }
+                if (second.endsWith(")")) {
+                    second = second.substring(0, second.length() - 1);
+                }
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+                Point point = new Point(x, y);
+                SpatialReference input = SpatialReference.create(3003);
+                SpatialReference output = SpatialReference.create(3857);
+                Point webPoint = (Point) GeometryEngine.project(point, input, output);
+
+
+                if (j == 0) {
+                    polygon.startPath(webPoint);
+
+                } else {
+                    polygon.lineTo(webPoint);
+
+                }
+
+            }
+            polyg.add(polygon);
+        }
+        return polyg;
+
+    }
+
+    private ArrayList<Polyline> createPolyline(ArrayList<String> multi_line) {
+
+        ArrayList<Polyline> polyline=new ArrayList<>();
         for (int i = 0; i < multi_line.size(); i++) {
-
+            Polyline poly2 = new Polyline();
             // mettere i punti trovati in un array per poi creare la polyline associata
             String pointStr = String.valueOf(multi_line.get(i).subSequence(11, multi_line.get(i).length()));
 
@@ -168,25 +216,60 @@ public class DatabaseAccess {
                     poly2.lineTo(webPoint);
 
                 }
-
-
-
-
             }
 
-            polyLine.add(poly2);
+            polyline.add(poly2);
+        }
+        return polyline;
+    }
+
+    /**
+     * query spaziale che rende le strade passanti in
+     * un determinato comune
+     **/
+
+    public Object [] queryComuneStrade(String name){
+
+        Object [] array_final=new Object[2];
+        array_final[0]=new ArrayList<Polygon>();
+        array_final[1]=new ArrayList<Polyline>();
+        ArrayList<Polygon> polygon_res=new ArrayList<>();
+        ArrayList<String> poly=new ArrayList<>();
+        ArrayList<String> multi_line=new ArrayList<>();
+        ArrayList<Polyline> polyLine=new ArrayList<>();
+
+
+        //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
+        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune JOIN reteStradale ON ((DBTComune.NOME = '"+name+"') AND (ST_Intersects(GeometryN(DBTComune.Geometry,1), GeometryN(reteStradale.Geometry,1)))) ;";
+        String query_comune = "SELECT ASText(GeometryN(Geometry,1)) from DBTComune where nome = '"+name+"';";
+        try {
+            Stmt stmt = database.prepare(query);
+
+            while (stmt.step()) {
+                String wkt = stmt.column_string(0);
+                //fiume = stmt.column_string(1);
+                //strada = stmt.column_string(1);
+                multi_line.add(wkt);
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
 
+        polyLine=createPolyline(multi_line);
 
 
-String wkt="";
+
+
+        String wkt="";
 
 
         try{
             Stmt stmt2 = database.prepare(query_comune);
             while (stmt2.step()) {
                 wkt = stmt2.column_string(0);
+                poly.add(wkt);
                 //fiume = stmt.column_string(1);
                 //strada = stmt.column_string(1);
 
@@ -201,59 +284,18 @@ String wkt="";
 
 
 
-            // mettere i punti trovati in un array per poi creare la polyline associata
-            String pointStr = wkt.substring(9,wkt.length());
-
-            String[] split_comma = pointStr.split("\\s*,\\s*");
-
-            for (int j = 0; j < split_comma.length; j++) {
-
-                String[] split = split_comma[j].split(" ");
-                String first = split[0];
-                String second = split[1];
-
-                if (second.endsWith("))")) {
-                    second = second.substring(0, second.length() - 2);
-                }
-                if (second.endsWith(")")) {
-                    second = second.substring(0, second.length() - 1);
-                }
-
-                // mettere i punti trovati in un array per poi creare la polyline associata
-                double x = Double.parseDouble(first);
-                double y = Double.parseDouble(second);
-                Point point = new Point(x, y);
-                SpatialReference input = SpatialReference.create(3003);
-                SpatialReference output = SpatialReference.create(3857);
-                Point webPoint = (Point) GeometryEngine.project(point, input, output);
-
-
-                    if(j==0)
-                    {
-                        polygon.startPath(webPoint);
-
-                    }
-                    else {
-                        polygon.lineTo(webPoint);
-
-                    }
-
-        }
+        // mettere i punti trovati in un array per poi creare la polyline associata
+        polygon_res=createPolygon(poly);
 
 
 
-
-        array_final[0] =polygon;
+        array_final[0] =polygon_res;
         array_final[1] = polyLine;
 
 
 
         return array_final;
     }
-
-
-
-
 
 
     /**
@@ -504,130 +546,26 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
     polygon[0]=new ArrayList<>();
     polygon[1]=new ArrayList<>();
     StringBuilder sb = new StringBuilder();
-    Double x;
-    Double y;
     try {
         sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
+        String parco="";
         Stmt stmt = database.prepare(query);
 
         while (stmt.step()) {
             String wkt = stmt.column_string(0);
-            String parco=stmt.column_string(1);
-            multi_parco.add(parco);
-           /* String wkt = stmt.column_string(0);*/
+            parco=stmt.column_string(1);
             multi_line.add(wkt);
         }
+        multi_parco.add(parco);
         stmt.close();
     } catch (Exception e) {
         e.printStackTrace();
     }
-    for (int i = 0; i < multi_line.size(); i++) {
 
-        //String temp= (multi_line.get(i));
-        // String query_multi = "SELECT ST_AsText(ST_LineMerge(ST_SnapToGrid(ST_GeomFromText('"+ multi_line.get(i) + "'),0.1)));";
+        polygon[0]=createPolygon(multi_line);
 
+        polygon[1]=createPolygon(multi_parco);
 
-
-
-
-        // mettere i punti trovati in un array per poi creare la polyline associata
-        String pointStr = String.valueOf(multi_line.get(i).subSequence(9,multi_line.get(i).length()));
-
-
-        String[] split_comma = pointStr.split("\\s*,\\s*");
-
-        Polygon polygon1 = new Polygon();
-        for (int j = 0; j < split_comma.length; j++) {
-
-            String[] split = split_comma[j].split(" ");
-            String first = split[0];
-
-            String second = split[1];
-            if(second.endsWith("))")){
-                second=second.substring(0,second.length() -2);
-            }
-            if(second.endsWith(")")){
-                second=second.substring(0,second.length() -1);
-            }
-
-
-            x = Double.parseDouble(first);
-            y = Double.parseDouble(second);
-
-            Point point = new Point();
-            SpatialReference input = SpatialReference.create(3003);
-            SpatialReference output = SpatialReference.create(3857);
-            point.setXY(x, y);
-            Point webPoint = (Point) GeometryEngine.project(point, input, output);
-            if (j == 0) {
-                polygon1.startPath(webPoint);
-            } else {
-                polygon1.lineTo(webPoint);
-            }
-
-        }
-
-        polygon[0].add(polygon1);
-
-        //polyline.add(point_result);
-
-
-
-    }
-
-    for (int i = 0; i < multi_parco.size(); i++) {
-
-        String temp= (multi_parco.get(i));
-        // String query_multi = "SELECT ST_AsText(ST_LineMerge(ST_SnapToGrid(ST_GeomFromText('"+ multi_line.get(i) + "'),0.1)));";
-
-
-
-
-
-        // mettere i punti trovati in un array per poi creare la polyline associata
-        String pointStr = String.valueOf(multi_parco.get(i).subSequence(9,multi_parco.get(i).length()));
-
-
-        String[] split_comma = pointStr.split("\\s*,\\s*");
-
-        Polygon polygon1 = new Polygon();
-        for (int j = 0; j < split_comma.length; j++) {
-
-            String[] split = split_comma[j].split(" ");
-            String first = split[0];
-
-            String second = split[1];
-            if(second.endsWith("))")){
-                second=second.substring(0,second.length() -2);
-            }
-            if(second.endsWith(")")){
-                second=second.substring(0,second.length() -1);
-            }
-
-
-            x = Double.parseDouble(first);
-            y = Double.parseDouble(second);
-
-            Point point = new Point();
-            SpatialReference input = SpatialReference.create(3003);
-            SpatialReference output = SpatialReference.create(3857);
-            point.setXY(x, y);
-            Point webPoint = (Point) GeometryEngine.project(point, input, output);
-            if (j == 0) {
-                polygon1.startPath(webPoint);
-            } else {
-                polygon1.lineTo(webPoint);
-            }
-
-        }
-
-        polygon[1].add(polygon1);
-
-        //polyline.add(point_result);
-
-
-
-    }
 
     return polygon;
 
@@ -640,6 +578,8 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
      **/
     public ArrayList<Point> queryComuniNearbyCentroid(String name) {
 
+        ArrayList<Point> point_result=new ArrayList<>();
+        ArrayList<String> punti=new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         sb.append("Query Comuni nearby...\n");
 
@@ -678,40 +618,17 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
             while (stmt.step()) {
                 String name1 = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
-                String temp=wkt.substring(6);
-                // mettere i punti trovati in un array per poi creare la polyline associata
-                String[] split =temp.split(" ");
-                String first = split[0];
-
-                String second = split[1];
-                if(second.endsWith("))")){
-                    second=second.substring(0,second.length() -2);
-                }
-                if(second.endsWith(")")){
-                    second=second.substring(0,second.length() -1);
-                }
-
-
-                double x = Double.parseDouble(first);
-                double y = Double.parseDouble(second);
-
-                Point point = new Point();
-                SpatialReference input = SpatialReference.create(3003);
-                SpatialReference output = SpatialReference.create(3857);
-                point.setXY(x, y);
-                Point webPoint = (Point) GeometryEngine.project(point, input, output);
-                point_result.add(webPoint);
+                punti.add(wkt);
             }
             stmt.close();
-
         } catch (Exception e) {
             e.printStackTrace();
             sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
-        sb.append("Done...\n");
-
+        point_result=createPoint(punti);
         return point_result;
     }
+
 
     /**
      * seconda query spaziale che rende i poligoni che individuano
@@ -771,67 +688,22 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
             e.printStackTrace();
             sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
-
-        for (int i = 0; i < multi_line.size(); i++) {
-
-            // mettere i punti trovati in un array per poi creare la polyline associata
-            String pointStr = String.valueOf(multi_line.get(i).subSequence(9,multi_line.get(i).length()));
-
-            String[] split_comma = pointStr.split("\\s*,\\s*");
-
-            Polygon polygon1 = new Polygon();
-            for (int j = 0; j < split_comma.length; j++) {
-
-                String[] split = split_comma[j].split(" ");
-                String first = split[0];
-                String second = split[1];
-
-                if(second.endsWith("))")){
-                    second=second.substring(0,second.length() -2);
-                }
-                if(second.endsWith(")")){
-                    second=second.substring(0,second.length() -1);
-                }
-
-                x = Double.parseDouble(first);
-                y = Double.parseDouble(second);
-
-                Point point = new Point();
-                SpatialReference input = SpatialReference.create(3003);
-                SpatialReference output = SpatialReference.create(3857);
-                point.setXY(x, y);
-                Point webPoint = (Point) GeometryEngine.project(point, input, output);
-                if (j == 0) {
-                    polygon1.startPath(webPoint);
-                } else {
-                    polygon1.lineTo(webPoint);
-                }
-            }
-
-            polygon.add(polygon1);
-
-        }
-        sb.append("Done...\n");
+        polygon=createPolygon(multi_line);
 
         return polygon;
     }
 
     public ArrayList<Polyline>[] queryStradeAttraversoFiumi(String name) {
 
-        ArrayList<Polyline> fiumi = new ArrayList<>();
-        ArrayList<Polyline> fiume_fixed = new ArrayList<>();
         ArrayList<Polyline> array_final[] = new ArrayList[2];
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_line_fiumi = new ArrayList<>();
         array_final[0] = new ArrayList<>();
         array_final[1] = new ArrayList<>();
-        Polyline poly1 = new Polyline();
-        Polyline poly2 = new Polyline();
 
-
-        //String query = "SELECT ASText(fiumiTorrenti_ARC.nome, reteStradale.nome) from fiumiTorrenti_ARC JOIN reteStradale ON ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry);";
         String query = "SELECT ASText(fiumiTorrenti_ARC.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) ;";
         String query_fiume = "SELECT ASText(Geometry) from fiumiTorrenti_ARC where nome = '"+name+"';";
+
         try {
             Stmt stmt = database.prepare(query);
 
@@ -846,52 +718,7 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
             e.printStackTrace();
         }
 
-
-            for (int i = 0; i < multi_line.size(); i++) {
-
-                // mettere i punti trovati in un array per poi creare la polyline associata
-                String pointStr = String.valueOf(multi_line.get(i).subSequence(11, multi_line.get(i).length()));
-
-                String[] split_comma = pointStr.split("\\s*,\\s*");
-            for (int j = 0; j < split_comma.length; j++) {
-
-                String[] split = split_comma[j].split(" ");
-                String first = split[0];
-                String second = split[1];
-
-                if (second.endsWith("))")) {
-                    second = second.substring(0, second.length() - 2);
-                }
-                if (second.endsWith(")")) {
-                    second = second.substring(0, second.length() - 1);
-                }
-
-                // mettere i punti trovati in un array per poi creare la polyline associata
-                double x = Double.parseDouble(first);
-                double y = Double.parseDouble(second);
-                Point point = new Point(x, y);
-                SpatialReference input = SpatialReference.create(3003);
-                SpatialReference output = SpatialReference.create(3857);
-                Point webPoint = (Point) GeometryEngine.project(point, input, output);
-                if(j==0)
-                {
-                    poly1.startPath(webPoint);
-
-                }
-                else {
-                    poly1.lineTo(webPoint);
-
-                }
-
-
-
-
-            }
-                fiumi.add(poly1);
-        }
-
-
-
+        array_final[0]=createPolyline(multi_line);
 
 
 
@@ -906,64 +733,11 @@ public ArrayList<Polygon> [] queryComunibyParchi(String name) {
             }
             stmt2.close();
         }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 e.printStackTrace();
             }
 
-
-            for (int i = 0; i < multi_line_fiumi.size(); i++) {
-
-                // mettere i punti trovati in un array per poi creare la polyline associata
-                String pointStr = String.valueOf(multi_line_fiumi.get(i).subSequence(11, multi_line_fiumi.get(i).length()));
-
-                String[] split_comma = pointStr.split("\\s*,\\s*");
-
-                for (int j = 0; j < split_comma.length; j++) {
-
-                    String[] split = split_comma[j].split(" ");
-                    String first = split[0];
-                    String second = split[1];
-
-                    if (second.endsWith("))")) {
-                        second = second.substring(0, second.length() - 2);
-                    }
-                    if (second.endsWith(")")) {
-                        second = second.substring(0, second.length() - 1);
-                    }
-
-                    // mettere i punti trovati in un array per poi creare la polyline associata
-                    double x = Double.parseDouble(first);
-                    double y = Double.parseDouble(second);
-                    Point point = new Point(x, y);
-                    SpatialReference input = SpatialReference.create(3003);
-                    SpatialReference output = SpatialReference.create(3857);
-                    Point webPoint = (Point) GeometryEngine.project(point, input, output);
-                    if(i!=0 && i%2==0)
-                    {
-
-                    }
-                    else{
-                        if(i==0)
-                        {
-                            poly2.startPath(webPoint);
-
-                        }
-                        else {
-                            poly2.lineTo(webPoint);
-
-                        }
-                    }
-
-                }
-                fiume_fixed.add(poly2);
-            }
-
-
-
-
-        array_final[0] = fiumi;
-        array_final[1] = fiume_fixed;
+        array_final[1] = createPolyline(multi_line_fiumi);
 
         return array_final;
     }

@@ -64,19 +64,23 @@ public class Query4Activity extends Activity {
 
         array_final =database.queryComuneStrade(name);
 
-        Polygon polygon=(Polygon) array_final[0];
+        ArrayList<Polygon> polygon=(ArrayList<Polygon>) array_final[0];
         ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[1];
 
 
 
-        Graphic graphicPolygon=new Graphic(polygon,sms);
+        Graphic [] graphicPolygon=new Graphic[polygon.size()];
         Graphic [] graphics=new Graphic[polyline.size()];
 
         //aggiungo i punti al layer di queryComuniNearByPolygon
         GraphicsLayer layer_intersezioni=new GraphicsLayer();
         GraphicsLayer layer_poligono=new GraphicsLayer();
 
-        layer_poligono.addGraphic(graphicPolygon);
+        for (int i = 0; i <polygon.size() ; i++) {
+
+            graphicPolygon[i]=new Graphic(polygon.get(i),sms);
+        }
+        layer_intersezioni.addGraphics(graphicPolygon);
         for (int i = 0; i <polyline.size() ; i++) {
 
             graphics[i]=new Graphic(polyline.get(i),sms_poly);
