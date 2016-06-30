@@ -40,6 +40,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         queryes.add("Query2");
         queryes.add("Query3");
         queryes.add("Query4");
+        queryes.add("Query5");
 
         try {
             databaseAccess = DatabaseAccess.getInstance(this);
@@ -63,8 +64,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                         toast.show();
                         break;
                     case 1:
-
-
                         intent = new Intent(MainActivity.this, Query1Activity.class);
                         intent.putExtra("name",name);
                         break;
@@ -78,6 +77,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                         break;
                     case 4:
                         intent = new Intent(MainActivity.this, Query4Activity.class);
+                        intent.putExtra("name",name);
+                        break;
+                    case 5:
+                        intent = new Intent(MainActivity.this, Query5Activity.class);
                         intent.putExtra("name",name);
                         break;
                 }
