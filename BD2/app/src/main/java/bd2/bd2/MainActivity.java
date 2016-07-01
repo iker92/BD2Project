@@ -6,7 +6,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -22,12 +27,12 @@ import java.util.List;
 import jsqlite.Exception;
 
 
-public class MainActivity extends Activity implements AdapterView.OnItemSelectedListener{
+public class MainActivity extends ActionBarActivity implements AdapterView.OnItemSelectedListener{
 
     Spinner spinner;
     DatabaseAccess databaseAccess = null;
     List<String> queryes = new ArrayList<>();
-    TextView result_text;
+    TextView testo;
     static int position;
     private String name;
 
@@ -35,6 +40,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         queryes.add("Scegli la query");
         queryes.add("Query1");
         queryes.add("Query2");
@@ -49,6 +55,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         }
 
         final Button button = (Button) findViewById(R.id.button);
+
+         final EditText editText = (EditText)findViewById(R.id.edittext);
+        testo = (TextView) findViewById(R.id.testo);
+
         button.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -57,6 +67,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                 Context context = getApplicationContext();
                 CharSequence text = "Nessun elemento selezionato!";
                 int duration = Toast.LENGTH_SHORT;
+                name = editText.getText().toString();
                 switch(position)
                 {
                     case 0:
@@ -65,18 +76,22 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                         break;
                     case 1:
                         intent = new Intent(MainActivity.this, Query1Activity.class);
+
                         intent.putExtra("name",name);
                         break;
                     case 2:
                         intent = new Intent(MainActivity.this, Query2Activity.class);
+
                         intent.putExtra("name",name);
                         break;
                     case 3:
                         intent = new Intent(MainActivity.this, Query3Activity.class);
+
                         intent.putExtra("name",name);
                         break;
                     case 4:
                         intent = new Intent(MainActivity.this, Query4Activity.class);
+
                         intent.putExtra("name",name);
                         break;
                     case 5:
@@ -125,7 +140,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         spinner.setOnItemSelectedListener(this);
     }
 
-    protected void showInputDialog() {
+    /*protected void showInputDialog() {
 
         // get prompts.xml view
         LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
@@ -154,7 +169,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
 
     }
-
+*/
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -169,9 +184,33 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
         position = adapterView.getSelectedItemPosition();
-        if(position!=0){
 
-            showInputDialog();
+
+        switch(position) {
+            case 1:
+
+                testo.setText("Questa query prende in input il nome di un comune e restituisce i comuni confinanti");
+
+                break;
+            case 2:
+                testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti");
+
+                break;
+            case 3:
+
+                testo.setText("Questa query prende in input il nome di un fiume e restituisce le intersezioni con le strade");
+
+                break;
+            case 4:
+
+                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade passanti per il comune");
+
+                break;
+            case 5:
+
+                testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti e le strade che passano per più di un comune confinante col parco");
+
+                break;
         }
 
     }
@@ -181,4 +220,5 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
 
     }
+
 }
