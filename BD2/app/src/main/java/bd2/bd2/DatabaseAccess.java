@@ -254,7 +254,14 @@ public class DatabaseAccess {
             String query_strade = "SELECT ASText(ST_GeometryN(reteStradale.Geometry,1)) " +
                     "from DBTComune JOIN reteStradale " +
                     "ON ST_Intersects(ST_GeomFromText('" + nomi_comuni.get(i) + "'), ST_GeometryN(reteStradale.Geometry,1)) " +
-                    "group by ST_GeometryN(DBTComune.Geometry,1) HAVING COUNT(ST_GeometryN(DBTComune.Geometry,1))>1;";
+                    "AND DBTComune.ROWID IN " +
+                    "(SELECT pkid " +
+                    "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(reteStradale.Geometry) AND " +
+                    "ymin <= MbrMaxY(reteStradale.Geometry) AND " +
+                    "xmax >= MbrMinX(reteStradale.Geometry) AND " +
+                    "ymax >= MbrMinY(reteStradale.Geometry))" +
+                    "GROUP BY reteStradale.PK_UID,"+
+                    "ST_GeometryN(reteStradale.Geometry,1) HAVING COUNT(ST_GeometryN(DBTComune.Geometry,1))>1;";
             try {
                 Stmt stmt = database.prepare(query_strade);
                 while (stmt.step()) {
