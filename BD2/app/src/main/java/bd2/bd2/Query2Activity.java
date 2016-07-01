@@ -135,7 +135,8 @@ public class Query2Activity extends Activity {
         protected ArrayList<Polygon> [] doInBackground(String... strings) {
 
             String name = strings[0];
-            polygons=database.queryComunibyParchi(name);
+
+                polygons = database.queryComunibyParchi(name);
             return polygons;
         }
 
@@ -154,24 +155,32 @@ public class Query2Activity extends Activity {
             if (pDialog.isShowing()) {
                 pDialog.dismiss();
             }
-            Graphic [] graphics=new Graphic[polygons[0].size()];
+            GraphicsLayer layer_poly = new GraphicsLayer();
+            if(polygons[0].size()!=0) {
 
-            GraphicsLayer layer_poly=new GraphicsLayer();
-            for (int i = 0; i <polygons[0].size() ; i++) {
 
-                graphics[i]=new Graphic(polygons[0].get(i),sms);
+                Graphic[] graphics = new Graphic[polygons[0].size()];
+
+
+                for (int i = 0; i < polygons[0].size(); i++) {
+
+                    graphics[i] = new Graphic(polygons[0].get(i), sms);
+                }
+                layer_poly.addGraphics(graphics);
             }
 
-            Graphic [] graphics1=new Graphic[polygons[1].size()];
+            if(polygons[1].size()!=0) {
+                Graphic[] graphics1 = new Graphic[polygons[1].size()];
 
 
-            for (int i = 0; i <polygons[1].size() ; i++) {
+                for (int i = 0; i < polygons[1].size(); i++) {
 
-                graphics1[i]=new Graphic(polygons[1].get(i),sms1);
+                    graphics1[i] = new Graphic(polygons[1].get(i), sms1);
+                }
+                layer_poly.addGraphics(graphics1);
             }
 
-            layer_poly.addGraphics(graphics);
-            layer_poly.addGraphics(graphics1);
+
 
             mMapView.addLayer(layer_poly);
 

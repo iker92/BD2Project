@@ -43,8 +43,9 @@ public class Query1Activity extends Activity {
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     GraphicsLayer layer = new GraphicsLayer();
     Point p;
-    ArrayList<Polygon> polygons;
+    ArrayList<Polygon> [] polygons;
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_poly1 = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
     private ProgressDialog pDialog;
 
     @Override
@@ -172,16 +173,23 @@ new BackgroundTask().execute(name);
             /**Trovo i poligoni***/
 
 
-            Graphic [] graphics=new Graphic[polygons.size()];
+            Graphic graphics=new Graphic(polygons[0].get(0),sms_poly1);
 
             //aggiungo i punti al layer di queryComuniNearByPolygon
             GraphicsLayer layer_poly=new GraphicsLayer();
-            for (int i = 0; i <polygons.size() ; i++) {
+            layer_poly.addGraphic(graphics);
 
-                graphics[i]=new Graphic(polygons.get(i),sms_poly);
+
+            Graphic [] graphics1=new Graphic[polygons[1].size()];
+            GraphicsLayer layer_poly1=new GraphicsLayer();
+            //aggiungo i punti al layer di queryComuniNearByPolygon
+            for (int i = 0; i <polygons[1].size() ; i++) {
+
+                graphics1[i]=new Graphic(polygons[1].get(i),sms_poly);
             }
-            layer_poly.addGraphics(graphics);
+            layer_poly1.addGraphics(graphics1);
 
+            mMapView.addLayer(layer_poly1);
             mMapView.addLayer(layer_poly);
 
         }

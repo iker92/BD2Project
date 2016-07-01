@@ -418,16 +418,49 @@ public class DatabaseAccess {
             while (stmt.step()) {
                 String wkt = stmt.column_string(0);
                 parco=stmt.column_string(1);
-                multi_line.add(wkt);
+                if(wkt!=null) {
+                    multi_line.add(wkt);
+                }
             }
-            multi_parco.add(parco);
+            if(parco!="") {
+                multi_parco.add(parco);
+                polygon[1]=createPolygon(multi_parco);
+            }
+
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        polygon[0]=createPolygon(multi_line);
-        polygon[1]=createPolygon(multi_parco);
+        if(multi_parco.size()==0){
+            String query_parco = "SELECT ASText(parchi.Geometry) FROM sistemaRegionaleParchi parchi WHERE parchi.nome='"+name+"';";
+
+            try {
+                sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
+                String parco = "";
+                Stmt stmt = database.prepare(query_parco);
+
+                while (stmt.step()) {
+                    parco = stmt.column_string(0);
+                }
+                stmt.close();
+
+                multi_parco.add(parco);
+                polygon[1] = createPolygon(multi_parco);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+ if (multi_line.size()!=0)
+        {
+            polygon[0]=createPolygon(multi_line);
+
+        }
+
 
         return polygon;
     }
@@ -496,9 +529,13 @@ public class DatabaseAccess {
      * seconda query spaziale che rende i poligoni che individuano
      * i paesi che toccano i bordi di Decimoputzu
      **/
-    public ArrayList<Polygon> queryComuniNearbyPolygon(String name) {
+    public ArrayList<Polygon> [] queryComuniNearbyPolygon(String name) {
 
         ArrayList<Polygon>polygon = new ArrayList<>();
+        ArrayList<Polygon> comune_poly=new ArrayList<>();
+        ArrayList<Polygon> [] totalPolygon=new ArrayList[2];
+        totalPolygon[0]=new ArrayList<>();
+        totalPolygon[1]=new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         sb.append("Query Comuni nearby...\n");
 
@@ -537,6 +574,7 @@ public class DatabaseAccess {
                 "     ymax >= MbrMinY(ST_GeomFromWKB(x'" + bufferGeom + "')))"+
                 " GROUP BY DBTComune.PK_UID;";
         ArrayList<String> multi_line = new ArrayList<>();
+        ArrayList<String> comune=new ArrayList<>();
 
         try {
             sb.append("\tComuni nearby Decimoputzu: \n");
@@ -546,7 +584,13 @@ public class DatabaseAccess {
 
                 String name1 = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
-                multi_line.add(wkt);
+                if (name.equals(name1)) {
+                    comune.add(wkt);
+                }
+                else
+                {
+                    multi_line.add(wkt);
+                }
             }
             stmt.close();
 
@@ -556,8 +600,11 @@ public class DatabaseAccess {
         }
 
         polygon=createPolygon(multi_line);
+        comune_poly=createPolygon(comune);
+        totalPolygon[0]=comune_poly;
+        totalPolygon[1]=polygon;
 
-        return polygon;
+        return totalPolygon;
     }
 
     public ArrayList<Polyline>[] queryStradeAttraversoFiumi(String name) {
