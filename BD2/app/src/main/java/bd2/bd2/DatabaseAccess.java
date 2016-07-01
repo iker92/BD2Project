@@ -233,9 +233,14 @@ public class DatabaseAccess {
         ArrayList<String> strade = new ArrayList<>();
         String parco = "";
 
-        String intersezione = "SELECT ASText(ST_GeometryN(comune.Geometry,1)), ASText(parchi.Geometry) " +
-                "FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) " +
-                "WHERE parchi.nome='" + name + "' AND comune.PROV = '092';";
+        String intersezione = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+                "AND comune.ROWID IN " +
+                "(SELECT pkid " +
+                "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
+                "ymin <= MbrMaxY(parchi.Geometry) AND " +
+                "xmax >= MbrMinX(parchi.Geometry) AND " +
+                "ymax >= MbrMinY(parchi.Geometry)) " +
+                "GROUP BY comune.PK_UID;";
         try {
             Stmt stmt = database.prepare(intersezione);
 

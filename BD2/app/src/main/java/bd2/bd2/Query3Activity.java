@@ -1,9 +1,11 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.esri.android.map.GraphicsLayer;
@@ -42,6 +44,7 @@ public class Query3Activity extends Activity {
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     ArrayList<Polyline> array_final[] = new ArrayList[2];
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,28 +64,9 @@ public class Query3Activity extends Activity {
             e.printStackTrace();
         }
 
-        array_final = database.queryStradeAttraversoFiumi(name);
 
-        Graphic [] graphics=new Graphic[array_final[0].size()];
-        Graphic [] graphics1=new Graphic[array_final[1].size()];
 
-        //aggiungo i punti al layer di queryComuniNearByPolygon
-        GraphicsLayer layer_intersezioni=new GraphicsLayer();
-        GraphicsLayer layer_fiume=new GraphicsLayer();
-        for (int i = 0; i <array_final[0].size() ; i++) {
-
-            graphics[i]=new Graphic(array_final[0].get(i),sms);
-
-        }
-        layer_intersezioni.addGraphics(graphics);
-        for (int i = 0; i <array_final[1].size() ; i++) {
-
-            graphics1[i]=new Graphic(array_final[1].get(i),sms_poly);
-        }
-        layer_fiume.addGraphics(graphics1);
-
-        mMapView.addLayer(layer_fiume);
-        mMapView.addLayer(layer_intersezioni);
+        new BackgroundTask().execute(name);
 
 
         if (savedInstanceState != null) {
@@ -149,6 +133,52 @@ public class Query3Activity extends Activity {
 
         // Save the current state of the map before the activity is destroyed.
         outState.putString(KEY_MAPSTATE, mMapState);
+    }
+    private class BackgroundTask extends AsyncTask<String,Object [],Object []> {
+        @Override
+        protected Object[] doInBackground(String... strings) {
+
+            String name = strings[0];
+            array_final = database.queryStradeAttraversoFiumi(name);
+            return array_final;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(Query3Activity.this);
+            pDialog.setMessage("Query in esecuzione...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Object[] aVoid) {
+            super.onPostExecute(aVoid);
+            if (pDialog.isShowing()) {
+                pDialog.dismiss();
+            }
+            Graphic [] graphics=new Graphic[array_final[0].size()];
+            Graphic [] graphics1=new Graphic[array_final[1].size()];
+
+            //aggiungo i punti al layer di queryComuniNearByPolygon
+            GraphicsLayer layer_intersezioni=new GraphicsLayer();
+            GraphicsLayer layer_fiume=new GraphicsLayer();
+            for (int i = 0; i <array_final[0].size() ; i++) {
+
+                graphics[i]=new Graphic(array_final[0].get(i),sms);
+
+            }
+            layer_intersezioni.addGraphics(graphics);
+            for (int i = 0; i <array_final[1].size() ; i++) {
+
+                graphics1[i]=new Graphic(array_final[1].get(i),sms_poly);
+            }
+            layer_fiume.addGraphics(graphics1);
+
+            mMapView.addLayer(layer_fiume);
+            mMapView.addLayer(layer_intersezioni);
+        }
     }
 
 }

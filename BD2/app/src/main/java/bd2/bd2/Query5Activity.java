@@ -1,9 +1,12 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.esri.android.map.GraphicsLayer;
@@ -44,6 +47,7 @@ public class Query5Activity extends Activity {
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
     SimpleMarkerSymbol sms_polygono = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
     Object array_final[] = new Object [3];
+    private ProgressDialog pDialog;
 
 
     @Override
@@ -63,35 +67,9 @@ public class Query5Activity extends Activity {
             e.printStackTrace();
         }
 
-        array_final = database.queryStradeComuniParco(name);
-
-        Polygon polygon=(Polygon) array_final[0];
-        ArrayList<Polyline> polyline = (ArrayList<Polyline>)array_final[1];
-        ArrayList<Polygon> polygons = (ArrayList<Polygon>) array_final[2];
+        new BackgroundTask().execute(name);
 
 
-        Graphic graphicPolygon = new Graphic(polygon,sms);
-        Graphic [] graphics = new Graphic[polyline.size()];
-        Graphic [] graphicsPolygono =  new Graphic[polygons.size()];
-
-        GraphicsLayer layer_intersezioni = new GraphicsLayer();
-        GraphicsLayer layer_poligono = new GraphicsLayer();
-        layer_poligono.addGraphic(graphicPolygon);
-
-        for (int i = 0; i <polyline.size() ; i++) {
-
-            graphics[i]=new Graphic(polyline.get(i),sms_poly);
-        }
-        layer_intersezioni.addGraphics(graphics);
-
-        for (int i = 0; i <polygons.size() ; i++) {
-
-            graphicsPolygono[i]=new Graphic(polygons.get(i),sms_polygono);
-        }
-        layer_intersezioni.addGraphics(graphicsPolygono);
-
-        mMapView.addLayer(layer_poligono);
-        mMapView.addLayer(layer_intersezioni);
 
 
         if (savedInstanceState != null) {
@@ -159,6 +137,65 @@ public class Query5Activity extends Activity {
         // Save the current state of the map before the activity is destroyed.
         outState.putString(KEY_MAPSTATE, mMapState);
     }
+
+
+
+    private class BackgroundTask extends AsyncTask<String,Object [],Object []> {
+        @Override
+        protected Object [] doInBackground(String... strings) {
+
+            String name=strings[0];
+            array_final=database.queryStradeComuniParco(name);
+            return array_final;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(Query5Activity.this);
+            pDialog.setMessage("Query in esecuzione...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+        @Override
+        protected void onPostExecute(Object []aVoid) {
+            super.onPostExecute(aVoid);
+            if (pDialog.isShowing())
+            {
+                pDialog.dismiss();
+            }
+
+            Polygon polygon=(Polygon) array_final[0];
+            ArrayList<Polyline> polyline = (ArrayList<Polyline>)array_final[1];
+            ArrayList<Polygon> polygons = (ArrayList<Polygon>) array_final[2];
+
+
+            Graphic graphicPolygon = new Graphic(polygon,sms);
+            Graphic [] graphics = new Graphic[polyline.size()];
+            Graphic [] graphicsPolygono =  new Graphic[polygons.size()];
+
+            GraphicsLayer layer_intersezioni = new GraphicsLayer();
+            GraphicsLayer layer_poligono = new GraphicsLayer();
+            layer_poligono.addGraphic(graphicPolygon);
+
+            for (int i = 0; i <polyline.size() ; i++) {
+
+                graphics[i]=new Graphic(polyline.get(i),sms_poly);
+            }
+            layer_intersezioni.addGraphics(graphics);
+
+            for (int i = 0; i <polygons.size() ; i++) {
+
+                graphicsPolygono[i]=new Graphic(polygons.get(i),sms_polygono);
+            }
+            layer_intersezioni.addGraphics(graphicsPolygono);
+
+            mMapView.addLayer(layer_poligono);
+            mMapView.addLayer(layer_intersezioni);
+
+        }
+    }
+
 
 
 }

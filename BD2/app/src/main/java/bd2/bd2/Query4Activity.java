@@ -1,9 +1,11 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.esri.android.map.GraphicsLayer;
@@ -42,6 +44,7 @@ public class Query4Activity extends Activity {
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     Object array_final[] = new Object [2];
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,34 +65,7 @@ public class Query4Activity extends Activity {
             e.printStackTrace();
         }
 
-        array_final =database.queryComuneStrade(name);
-
-        ArrayList<Polygon> polygon=(ArrayList<Polygon>) array_final[0];
-        ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[1];
-
-
-
-        Graphic [] graphicPolygon=new Graphic[polygon.size()];
-        Graphic [] graphics=new Graphic[polyline.size()];
-
-        //aggiungo i punti al layer di queryComuniNearByPolygon
-        GraphicsLayer layer_intersezioni=new GraphicsLayer();
-        GraphicsLayer layer_poligono=new GraphicsLayer();
-
-        for (int i = 0; i <polygon.size() ; i++) {
-
-            graphicPolygon[i]=new Graphic(polygon.get(i),sms);
-        }
-        layer_intersezioni.addGraphics(graphicPolygon);
-        for (int i = 0; i <polyline.size() ; i++) {
-
-            graphics[i]=new Graphic(polyline.get(i),sms_poly);
-        }
-        layer_intersezioni.addGraphics(graphics);
-
-        mMapView.addLayer(layer_poligono);
-        mMapView.addLayer(layer_intersezioni);
-
+        new BackgroundTask().execute(name);
 
         if (savedInstanceState != null) {
             mMapState = savedInstanceState.getString(KEY_MAPSTATE, null);
@@ -159,4 +135,57 @@ public class Query4Activity extends Activity {
 
 
 
+    private class BackgroundTask extends AsyncTask<String,Object [],Object []> {
+        @Override
+        protected Object[] doInBackground(String... strings) {
+
+            String name = strings[0];
+            array_final =database.queryComuneStrade(name);
+            return array_final;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(Query4Activity.this);
+            pDialog.setMessage("Query in esecuzione...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Object[] aVoid) {
+            super.onPostExecute(aVoid);
+            if (pDialog.isShowing()) {
+                pDialog.dismiss();
+            }
+
+            ArrayList<Polygon> polygon=(ArrayList<Polygon>) array_final[0];
+            ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[1];
+
+
+
+            Graphic [] graphicPolygon=new Graphic[polygon.size()];
+            Graphic [] graphics=new Graphic[polyline.size()];
+
+            //aggiungo i punti al layer di queryComuniNearByPolygon
+            GraphicsLayer layer_intersezioni=new GraphicsLayer();
+            GraphicsLayer layer_poligono=new GraphicsLayer();
+
+            for (int i = 0; i <polygon.size() ; i++) {
+
+                graphicPolygon[i]=new Graphic(polygon.get(i),sms);
+            }
+            layer_intersezioni.addGraphics(graphicPolygon);
+            for (int i = 0; i <polyline.size() ; i++) {
+
+                graphics[i]=new Graphic(polyline.get(i),sms_poly);
+            }
+            layer_intersezioni.addGraphics(graphics);
+
+            mMapView.addLayer(layer_poligono);
+            mMapView.addLayer(layer_intersezioni);
+
+        }
+    }
 }

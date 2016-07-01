@@ -1,9 +1,11 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import com.esri.android.map.GraphicsLayer;
 import com.esri.android.map.MapView;
@@ -43,6 +45,7 @@ public class Query1Activity extends Activity {
     Point p;
     ArrayList<Polygon> polygons;
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,32 +65,7 @@ public class Query1Activity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        /**Trovo i centroidi**/
-        points = database.queryComuniNearbyCentroid(name);
-
-        //aggiungo i punti al layer di queryComuniNearByCentroid
-        for (int i = 0; i < points.size(); i++) {
-
-            p = points.get(i);
-            layer.addGraphic(new Graphic(p, sms));
-        }
-        mMapView.addLayer(layer);
-
-        /**Trovo i poligoni***/
-        polygons = database.queryComuniNearbyPolygon(name);
-
-        Graphic [] graphics=new Graphic[polygons.size()];
-
-        //aggiungo i punti al layer di queryComuniNearByPolygon
-        GraphicsLayer layer_poly=new GraphicsLayer();
-        for (int i = 0; i <polygons.size() ; i++) {
-
-            graphics[i]=new Graphic(polygons.get(i),sms_poly);
-        }
-        layer_poly.addGraphics(graphics);
-
-        mMapView.addLayer(layer_poly);
+new BackgroundTask().execute(name);
 
         if (savedInstanceState != null) {
             mMapState = savedInstanceState.getString(KEY_MAPSTATE, null);
@@ -154,4 +132,59 @@ public class Query1Activity extends Activity {
         // Save the current state of the map before the activity is destroyed.
         outState.putString(KEY_MAPSTATE, mMapState);
     }
+
+    private class BackgroundTask extends AsyncTask<String,Void,Void> {
+        @Override
+        protected Void doInBackground(String... strings) {
+
+            String name = strings[0];
+            points = database.queryComuniNearbyCentroid(name);
+            polygons = database.queryComuniNearbyPolygon(name);
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(Query1Activity.this);
+            pDialog.setMessage("Query in esecuzione...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (pDialog.isShowing()) {
+                pDialog.dismiss();
+            }
+            /**Trovo i centroidi**/
+
+
+            //aggiungo i punti al layer di queryComuniNearByCentroid
+            for (int i = 0; i < points.size(); i++) {
+
+                p = points.get(i);
+                layer.addGraphic(new Graphic(p, sms));
+            }
+            mMapView.addLayer(layer);
+
+            /**Trovo i poligoni***/
+
+
+            Graphic [] graphics=new Graphic[polygons.size()];
+
+            //aggiungo i punti al layer di queryComuniNearByPolygon
+            GraphicsLayer layer_poly=new GraphicsLayer();
+            for (int i = 0; i <polygons.size() ; i++) {
+
+                graphics[i]=new Graphic(polygons.get(i),sms_poly);
+            }
+            layer_poly.addGraphics(graphics);
+
+            mMapView.addLayer(layer_poly);
+
+        }
+    }
+
 }

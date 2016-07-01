@@ -1,8 +1,10 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.esri.android.map.GraphicsLayer;
@@ -42,6 +44,7 @@ public class Query2Activity extends Activity {
     ArrayList<Polygon> polygons []=new ArrayList[2];
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
     SimpleMarkerSymbol sms1 = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,27 +64,7 @@ public class Query2Activity extends Activity {
             e.printStackTrace();
         }
 
-        polygons=database.queryComunibyParchi(name);
-        Graphic [] graphics=new Graphic[polygons[0].size()];
-
-        GraphicsLayer layer_poly=new GraphicsLayer();
-        for (int i = 0; i <polygons[0].size() ; i++) {
-
-            graphics[i]=new Graphic(polygons[0].get(i),sms);
-        }
-
-        Graphic [] graphics1=new Graphic[polygons[1].size()];
-
-
-        for (int i = 0; i <polygons[1].size() ; i++) {
-
-            graphics1[i]=new Graphic(polygons[1].get(i),sms1);
-        }
-
-        layer_poly.addGraphics(graphics);
-        layer_poly.addGraphics(graphics1);
-
-        mMapView.addLayer(layer_poly);
+       new BackgroundTask().execute(name);
 
 
 
@@ -147,5 +130,53 @@ public class Query2Activity extends Activity {
         // Save the current state of the map before the activity is destroyed.
         outState.putString(KEY_MAPSTATE, mMapState);
     }
+    private class BackgroundTask extends AsyncTask<String,ArrayList<Polygon> [],ArrayList<Polygon> []> {
+        @Override
+        protected ArrayList<Polygon> [] doInBackground(String... strings) {
+
+            String name = strings[0];
+            polygons=database.queryComunibyParchi(name);
+            return polygons;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(Query2Activity.this);
+            pDialog.setMessage("Query in esecuzione...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Polygon> [] aVoid) {
+            super.onPostExecute(aVoid);
+            if (pDialog.isShowing()) {
+                pDialog.dismiss();
+            }
+            Graphic [] graphics=new Graphic[polygons[0].size()];
+
+            GraphicsLayer layer_poly=new GraphicsLayer();
+            for (int i = 0; i <polygons[0].size() ; i++) {
+
+                graphics[i]=new Graphic(polygons[0].get(i),sms);
+            }
+
+            Graphic [] graphics1=new Graphic[polygons[1].size()];
+
+
+            for (int i = 0; i <polygons[1].size() ; i++) {
+
+                graphics1[i]=new Graphic(polygons[1].get(i),sms1);
+            }
+
+            layer_poly.addGraphics(graphics);
+            layer_poly.addGraphics(graphics1);
+
+            mMapView.addLayer(layer_poly);
+
+        }
+    }
+
 }
 
