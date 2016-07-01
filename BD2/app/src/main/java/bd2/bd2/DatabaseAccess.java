@@ -659,11 +659,14 @@ public class DatabaseAccess {
         return array_final;
     }
 
-    public ArrayList<Polygon> [] queryComunibyParco(String name){
+
+    /**Query che rende tutti i comuni contenuti in un parco**/
+
+    public ArrayList<Polygon>[] queryComunibyParco(String name){
 
         ArrayList<Polygon> [] array_final=new ArrayList[2];
-        array_final[0]=new ArrayList<>();
-        array_final[1]=new ArrayList<>();
+        array_final[0]=new ArrayList<Polygon>();
+        array_final[1]=new ArrayList<Polygon>();
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_parco=new ArrayList<>();
         StringBuilder sb=new StringBuilder();
@@ -728,12 +731,61 @@ public class DatabaseAccess {
 
         }
 
-
-
-
-
         return array_final;
     }
+
+    /**Query che rende tutti i comuni che toccano un determinato fiume**/
+
+    public Object[] comuniViciniFiume(String name){
+
+        Object[] finale = new Object[2];
+        ArrayList<String> fiume_stringa = new ArrayList<>();
+        ArrayList<String> comuni_stringa = new ArrayList<>();
+        finale[0] = new ArrayList<Polyline>();
+        finale[1] = new ArrayList<Polygon>();
+
+        String query = "SELECT ASText(ST_GeometryN(DBTComune.Geometry, 1)) from fiumiTorrenti_ARC JOIN DBTComune ON " +
+                "((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Crosses(fiumiTorrenti_ARC.Geometry, DBTComune.Geometry))) " +
+                "AND DBTComune.ROWID IN" +
+                " (SELECT pkid"+
+                " FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(fiumiTorrenti_ARC.Geometry) AND" +
+                "     ymin <= MbrMaxY(fiumiTorrenti_ARC.Geometry) AND" +
+                "     xmax >= MbrMinX(fiumiTorrenti_ARC.Geometry) AND" +
+                "     ymax >= MbrMinY(fiumiTorrenti_ARC.Geometry))"+
+                " GROUP BY DBTComune.PK_UID;";
+
+        String query_fiume = "SELECT ASText(Geometry) from fiumiTorrenti_ARC where nome = '"+name+"';";
+
+        try {
+            Stmt stmt = database.prepare(query_fiume);
+
+            while (stmt.step()) {
+                String wkt = stmt.column_string(0);
+                fiume_stringa.add(wkt);
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Stmt stmt2 = database.prepare(query);
+
+            while (stmt2.step()) {
+                String wkt = stmt2.column_string(0);
+                comuni_stringa.add(wkt);
+            }
+            stmt2.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        finale[0] = createPolyline(fiume_stringa);
+        finale[1] = createPolygon(comuni_stringa);
+
+        return finale;
+    }
+
 
 }
 
