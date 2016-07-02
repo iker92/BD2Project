@@ -233,7 +233,7 @@ public class DatabaseAccess {
         ArrayList<String> strade = new ArrayList<>();
         String parco = "";
 
-        String intersezione = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String intersezione = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry ,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -258,7 +258,7 @@ public class DatabaseAccess {
 
             String query_strade = "SELECT ASText(ST_GeometryN(reteStradale.Geometry,1)) " +
                     "from DBTComune JOIN reteStradale " +
-                    "ON ST_Intersects(ST_GeomFromText('" + nomi_comuni.get(i) + "'), ST_GeometryN(reteStradale.Geometry,1)) " +
+                    "ON ST_Intersects(ST_GeomFromText('" + nomi_comuni.get(i) + "'), reteStradale.Geometry) " +
                     "AND DBTComune.ROWID IN " +
                     "(SELECT pkid " +
                     "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(reteStradale.Geometry) AND " +
@@ -337,7 +337,7 @@ public class DatabaseAccess {
         ArrayList<Polyline> polyLine = new ArrayList<>();
 
         String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune,reteStradale WHERE " +
-                "DBTComune.NOME = '"+name+"' AND ST_Intersects(GeometryN(DBTComune.Geometry,1), GeometryN(reteStradale.Geometry,1)) " +
+                "DBTComune.NOME = '"+name+"' AND ST_Intersects(DbtComune.Geometry, reteStradale.Geometry) " +
                 "AND DBTComune.ROWID IN" +
                 " (SELECT pkid"+
                 " FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(reteStradale.Geometry) AND" +
@@ -401,7 +401,7 @@ public class DatabaseAccess {
         polygon[1]=new ArrayList<>();
         StringBuilder sb = new StringBuilder();
 
-        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(ST_GeometryN(comune.Geometry,1),parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -658,5 +658,82 @@ public class DatabaseAccess {
 
         return array_final;
     }
+
+    public ArrayList<Polygon> [] queryComunibyParco(String name){
+
+        ArrayList<Polygon> [] array_final=new ArrayList[2];
+        array_final[0]=new ArrayList<>();
+        array_final[1]=new ArrayList<>();
+        ArrayList<String> multi_line = new ArrayList<>();
+        ArrayList<String> multi_parco=new ArrayList<>();
+        StringBuilder sb=new StringBuilder();
+
+        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Within(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+                "AND comune.ROWID IN " +
+                "(SELECT pkid " +
+                "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
+                "ymin <= MbrMaxY(parchi.Geometry) AND " +
+                "xmax >= MbrMinX(parchi.Geometry) AND " +
+                "ymax >= MbrMinY(parchi.Geometry)) " +
+                "GROUP BY comune.PK_UID;";
+
+        try {
+            sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
+            String parco="";
+            Stmt stmt = database.prepare(query);
+
+            while (stmt.step()) {
+                String wkt = stmt.column_string(0);
+                parco=stmt.column_string(1);
+                if(wkt!=null) {
+                    multi_line.add(wkt);
+                }
+            }
+            if(parco!="") {
+                multi_parco.add(parco);
+                array_final[1]=createPolygon(multi_parco);
+            }
+
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if(multi_parco.size()==0){
+            String query_parco = "SELECT ASText(parchi.Geometry) FROM sistemaRegionaleParchi parchi WHERE parchi.nome='"+name+"';";
+
+            try {
+                sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
+                String parco = "";
+                Stmt stmt = database.prepare(query_parco);
+
+                while (stmt.step()) {
+                    parco = stmt.column_string(0);
+                }
+                stmt.close();
+
+                multi_parco.add(parco);
+                array_final[1] = createPolygon(multi_parco);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        if (multi_line.size()!=0)
+        {
+            array_final[0]=createPolygon(multi_line);
+
+        }
+
+
+
+
+
+        return array_final;
+    }
+
 }
 

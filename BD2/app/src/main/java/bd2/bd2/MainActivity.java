@@ -47,6 +47,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         queryes.add("Query3");
         queryes.add("Query4");
         queryes.add("Query5");
+        queryes.add("Query6");
 
         try {
             databaseAccess = DatabaseAccess.getInstance(this);
@@ -98,6 +99,9 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                         intent = new Intent(MainActivity.this, Query5Activity.class);
                         intent.putExtra("name",name);
                         break;
+                    case 6:
+                        intent=new Intent(MainActivity.this,Query6Activity.class);
+                        intent.putExtra("name",name);
                 }
                 if(intent != null)
                 {
@@ -209,6 +213,11 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             case 5:
 
                 testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti e le strade che passano per più di un comune confinante col parco");
+
+                break;
+            case 6:
+
+                testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni completamente dentro il parco");
 
                 break;
         }
