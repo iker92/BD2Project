@@ -49,6 +49,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         queryes.add("Query5");
         queryes.add("Query6");
         queryes.add("Query7");
+        queryes.add("Query8");
 
         try {
             databaseAccess = DatabaseAccess.getInstance(this);
@@ -106,6 +107,10 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                         break;
                     case 7:
                         intent=new Intent(MainActivity.this,Query7Activity.class);
+                        intent.putExtra("name",name);
+                        break;
+                    case 8:
+                        intent=new Intent(MainActivity.this,Query8Activity.class);
                         intent.putExtra("name",name);
                         break;
                 }
@@ -229,6 +234,12 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             case 7:
 
                 testo.setText("Questa query prende in input il nome di un fiume e restituisce i comuni che lo toccano");
+
+                break;
+
+            case 8:
+
+                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i parchi nele vicinanze che non lo intersecano");
 
                 break;
         }
