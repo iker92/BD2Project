@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class DatabaseAccess {
@@ -131,6 +132,7 @@ public class DatabaseAccess {
 
         ArrayList<Polygon> polyg=new ArrayList<>();
 
+
         for (int i = 0; i < poly.size(); i++) {
 
             Polygon polygon=new Polygon();
@@ -166,6 +168,8 @@ public class DatabaseAccess {
                 }
             }
             polyg.add(polygon);
+
+
         }
         return polyg;
     }
@@ -328,15 +332,19 @@ public class DatabaseAccess {
 
     public Object [] queryComuneStrade(String name){
 
-        Object[] array_final = new Object[2];
-        array_final[0] = new ArrayList<Polygon>();
-        array_final[1] = new ArrayList<Polyline>();
+        Object[] array_final = new Object[4];
+        array_final[0]=new ArrayList<String>();
+        array_final[1] = new ArrayList<Polygon>();
+        array_final[2]=new ArrayList<String>();
+        array_final[3] = new ArrayList<Polyline>();
         ArrayList<Polygon> polygon_res = new ArrayList<>();
+        ArrayList<String> nomi_comuni=new ArrayList<>();
+        ArrayList<String> nomi_strade=new ArrayList<>();
         ArrayList<String> poly = new ArrayList<>();
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<Polyline> polyLine = new ArrayList<>();
 
-        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune,reteStradale WHERE " +
+        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)), reteStradale.nome from DBTComune,reteStradale WHERE " +
                 "DBTComune.NOME = '"+name+"' AND ST_Intersects(DbtComune.Geometry, reteStradale.Geometry) " +
                 "AND DBTComune.ROWID IN" +
                 " (SELECT pkid"+
@@ -346,14 +354,16 @@ public class DatabaseAccess {
                 "     ymax >= MbrMinY(reteStradale.Geometry))"+
                 " GROUP BY reteStradale.PK_UID;";
 
-        String query_comune = "SELECT ASText(GeometryN(Geometry,1)) from DBTComune where nome = '"+name+"';";
+        String query_comune = "SELECT ASText(GeometryN(Geometry,1)), NOME from DBTComune where nome = '"+name+"';";
 
         try {
             Stmt stmt = database.prepare(query);
 
             while (stmt.step()) {
                 String wkt = stmt.column_string(0);
+                String strada=stmt.column_string(1);
                 multi_line.add(wkt);
+                nomi_strade.add(strada);
             }
             stmt.close();
         } catch (Exception e) {
@@ -368,7 +378,9 @@ public class DatabaseAccess {
             Stmt stmt2 = database.prepare(query_comune);
             while (stmt2.step()) {
                 wkt = stmt2.column_string(0);
+                String comune=stmt2.column_string(1);
                 poly.add(wkt);
+                nomi_comuni.add(comune);
             }
             stmt2.close();
         }
@@ -379,9 +391,10 @@ public class DatabaseAccess {
 
         // mettere i punti trovati in un array per poi creare la polyline associata
         polygon_res=createPolygon(poly);
-
-        array_final[0] =polygon_res;
-        array_final[1] = polyLine;
+        array_final[0]=nomi_comuni;
+        array_final[1] =polygon_res;
+        array_final[2]=nomi_strade;
+        array_final[3] = polyLine;
 
         return array_final;
     }
@@ -392,16 +405,21 @@ public class DatabaseAccess {
      * un determinato parco naturale
      **/
 
-    public ArrayList<Polygon> [] queryComunibyParchi(String name) {
+    public ArrayList<?> []  queryComunibyParchi(String name) {
 
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_parco=new ArrayList<>();
-        ArrayList<Polygon>[] polygon = new ArrayList[2];
-        polygon[0]=new ArrayList<>();
-        polygon[1]=new ArrayList<>();
+        ArrayList<String> names_comuni=new ArrayList<>();
+        ArrayList<String> names_parco=new ArrayList<>();
+        ArrayList<?> [] map=new ArrayList[4];
+        map[0]=new ArrayList<String>();
+        map[1]=new ArrayList<Polygon>();
+        map[2]=new ArrayList<String>();
+        map[3]=new ArrayList<Polygon>();
+
         StringBuilder sb = new StringBuilder();
 
-        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry),comune.NOME, parchi.nome FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -413,18 +431,25 @@ public class DatabaseAccess {
         try {
             sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
             String parco="";
+            String nome_parco="";
             Stmt stmt = database.prepare(query);
 
             while (stmt.step()) {
                 String wkt = stmt.column_string(0);
                 parco=stmt.column_string(1);
+                String nome_comune=stmt.column_string(2);
+                nome_parco=stmt.column_string(3);
                 if(wkt!=null) {
                     multi_line.add(wkt);
+                    names_comuni.add(nome_comune);
+
                 }
             }
             if(parco!="") {
                 multi_parco.add(parco);
-                polygon[1]=createPolygon(multi_parco);
+               names_parco.add(nome_parco);
+                map[1]=createPolygon(multi_parco);
+                map[0]=names_parco;
             }
 
             stmt.close();
@@ -446,7 +471,8 @@ public class DatabaseAccess {
                 stmt.close();
 
                 multi_parco.add(parco);
-                polygon[1] = createPolygon(multi_parco);
+                names_parco.add(parco);
+                map[1] = createPolygon(multi_parco);
 
 
             } catch (Exception e) {
@@ -457,12 +483,14 @@ public class DatabaseAccess {
 
  if (multi_line.size()!=0)
         {
-            polygon[0]=createPolygon(multi_line);
+            map[3]=createPolygon(multi_line);
+            map[2]=names_comuni;
+
 
         }
 
 
-        return polygon;
+        return map;
     }
 
 
@@ -599,8 +627,8 @@ public class DatabaseAccess {
             sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
 
-        polygon=createPolygon(multi_line);
-        comune_poly=createPolygon(comune);
+       polygon=createPolygon(multi_line);
+       comune_poly=createPolygon(comune);
         totalPolygon[0]=comune_poly;
         totalPolygon[1]=polygon;
 
@@ -670,6 +698,7 @@ public class DatabaseAccess {
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_parco=new ArrayList<>();
         StringBuilder sb=new StringBuilder();
+        HashMap<String,ArrayList<?>> map=new HashMap<>();
 
         String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Within(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
@@ -694,7 +723,7 @@ public class DatabaseAccess {
             }
             if(parco!="") {
                 multi_parco.add(parco);
-                array_final[1]=createPolygon(multi_parco);
+              array_final[1]=createPolygon(multi_parco);
             }
 
             stmt.close();
@@ -716,7 +745,7 @@ public class DatabaseAccess {
                 stmt.close();
 
                 multi_parco.add(parco);
-                array_final[1] = createPolygon(multi_parco);
+               array_final[1] = createPolygon(multi_parco);
 
 
             } catch (Exception e) {
@@ -727,7 +756,7 @@ public class DatabaseAccess {
 
         if (multi_line.size()!=0)
         {
-            array_final[0]=createPolygon(multi_line);
+           array_final[0]=createPolygon(multi_line);
 
         }
 
@@ -781,7 +810,7 @@ public class DatabaseAccess {
         }
 
         finale[0] = createPolyline(fiume_stringa);
-        finale[1] = createPolygon(comuni_stringa);
+       finale[1] = createPolygon(comuni_stringa);
 
         return finale;
     }
@@ -792,7 +821,7 @@ public class DatabaseAccess {
 
 
 
-    public Object[] queryStradeComuneParchiDisjoint(String name) {
+    public  Object[] queryStradeComuneParchiDisjoint(String name) {
 
         Object[] array_final = new Object[3];
         array_final[0] = new ArrayList<Polyline>();
@@ -854,7 +883,7 @@ public class DatabaseAccess {
         }
 
         // mettere i punti trovati in un array per poi creare la polyline associata
-        parchi_res=createPolygon(parchi);
+      parchi_res=createPolygon(parchi);
 
 
         array_final[0] =strade;

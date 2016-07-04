@@ -15,6 +15,7 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
+import com.esri.core.symbol.TextSymbol;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class Query4Activity extends Activity {
 
     DatabaseAccess database = null;
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
-    Object array_final[] = new Object [2];
+    Object array_final[] = new Object [4];
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
     private ProgressDialog pDialog;
 
@@ -159,32 +160,43 @@ public class Query4Activity extends Activity {
             if (pDialog.isShowing()) {
                 pDialog.dismiss();
             }
-
-            ArrayList<Polygon> polygon=(ArrayList<Polygon>) array_final[0];
-            ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[1];
+            ArrayList<String> nomi_comune=(ArrayList<String>)array_final[0];
+            ArrayList<Polygon> polygon=(ArrayList<Polygon>) array_final[1];
+            ArrayList<String> nomi_strade=(ArrayList<String>)array_final[2];
+            ArrayList<Polyline> polyline=(ArrayList<Polyline>)array_final[3];
 
 
 
             Graphic [] graphicPolygon=new Graphic[polygon.size()];
             Graphic [] graphics=new Graphic[polyline.size()];
+            Graphic [] graphic_nomi_comune=new Graphic[nomi_comune.size()];
+            Graphic [] graphic_nomi_strade=new Graphic[nomi_strade.size()];
 
             //aggiungo i punti al layer di queryComuniNearByPolygon
             GraphicsLayer layer_intersezioni=new GraphicsLayer();
             GraphicsLayer layer_poligono=new GraphicsLayer();
+            GraphicsLayer layer_nomi=new GraphicsLayer();
 
             for (int i = 0; i <polygon.size() ; i++) {
+                TextSymbol txtSymbol = new TextSymbol(10,nomi_comune.get(i), Color.BLACK);
 
                 graphicPolygon[i]=new Graphic(polygon.get(i),sms);
+                graphic_nomi_comune[i]=new Graphic(polygon.get(i),txtSymbol);
             }
             layer_intersezioni.addGraphics(graphicPolygon);
+            layer_nomi.addGraphics(graphic_nomi_comune);
             for (int i = 0; i <polyline.size() ; i++) {
+                TextSymbol txtSymbol = new TextSymbol(10,nomi_strade.get(i), Color.BLACK);
 
                 graphics[i]=new Graphic(polyline.get(i),sms_poly);
+                graphic_nomi_strade[i]=new Graphic(polyline.get(i),txtSymbol);
             }
             layer_intersezioni.addGraphics(graphics);
+            layer_nomi.addGraphics(graphic_nomi_strade);
 
             mMapView.addLayer(layer_poligono);
             mMapView.addLayer(layer_intersezioni);
+            mMapView.addLayer(layer_nomi);
 
         }
     }
