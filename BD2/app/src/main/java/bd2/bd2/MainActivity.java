@@ -50,6 +50,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         queryes.add("Query6");
         queryes.add("Query7");
         queryes.add("Query8");
+        queryes.add("Query9");
 
         try {
             databaseAccess = DatabaseAccess.getInstance(this);
@@ -59,7 +60,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
         final Button button = (Button) findViewById(R.id.button);
 
-         final EditText editText = (EditText)findViewById(R.id.edittext);
+        final EditText editText = (EditText)findViewById(R.id.edittext);
         testo = (TextView) findViewById(R.id.testo);
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -79,22 +80,18 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                         break;
                     case 1:
                         intent = new Intent(MainActivity.this, Query1Activity.class);
-
                         intent.putExtra("name",name);
                         break;
                     case 2:
                         intent = new Intent(MainActivity.this, Query2Activity.class);
-
                         intent.putExtra("name",name);
                         break;
                     case 3:
                         intent = new Intent(MainActivity.this, Query3Activity.class);
-
                         intent.putExtra("name",name);
                         break;
                     case 4:
                         intent = new Intent(MainActivity.this, Query4Activity.class);
-
                         intent.putExtra("name",name);
                         break;
                     case 5:
@@ -111,6 +108,10 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                         break;
                     case 8:
                         intent=new Intent(MainActivity.this,Query8Activity.class);
+                        intent.putExtra("name",name);
+                        break;
+                    case 9:
+                        intent=new Intent(MainActivity.this,Query9Activity.class);
                         intent.putExtra("name",name);
                         break;
                 }
@@ -155,36 +156,6 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         spinner.setOnItemSelectedListener(this);
     }
 
-    /*protected void showInputDialog() {
-
-        // get prompts.xml view
-        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-        View promptView = layoutInflater.inflate(R.layout.inputdialog, null);
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-        alertDialogBuilder.setView(promptView);
-
-        final EditText editText = (EditText) promptView.findViewById(R.id.edittext);
-        // setup a dialog window
-        alertDialogBuilder.setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        name=editText.getText().toString();
-                    }
-                })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-
-        // create an alert dialog
-        AlertDialog alert = alertDialogBuilder.create();
-        alert.show();
-
-
-    }
-*/
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -200,55 +171,39 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
         position = adapterView.getSelectedItemPosition();
 
-
         switch(position) {
             case 1:
-
                 testo.setText("Questa query prende in input il nome di un comune e restituisce i comuni confinanti");
-
                 break;
             case 2:
                 testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti");
-
                 break;
             case 3:
-
                 testo.setText("Questa query prende in input il nome di un fiume e restituisce le intersezioni con le strade");
-
                 break;
             case 4:
-
                 testo.setText("Questa query prende in input il nome di un comune e restituisce le strade passanti per il comune");
-
                 break;
             case 5:
-
                 testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti e le strade che passano per più di un comune confinante col parco");
-
                 break;
             case 6:
-
                 testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni completamente dentro il parco");
-
                 break;
             case 7:
-
                 testo.setText("Questa query prende in input il nome di un fiume e restituisce i comuni che lo toccano");
-
                 break;
-
             case 8:
-
                 testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i parchi nelle vicinanze che non lo intersecano");
-
+                break;
+            case 9:
+                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i fiumi completamente contenuti all'interno");
                 break;
         }
-
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
-
 
     }
 

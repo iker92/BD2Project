@@ -132,7 +132,6 @@ public class DatabaseAccess {
 
         ArrayList<Polygon> polyg=new ArrayList<>();
 
-
         for (int i = 0; i < poly.size(); i++) {
 
             Polygon polygon=new Polygon();
@@ -168,8 +167,6 @@ public class DatabaseAccess {
                 }
             }
             polyg.add(polygon);
-
-
         }
         return polyg;
     }
@@ -371,7 +368,6 @@ public class DatabaseAccess {
         }
 
         polyLine=createPolyline(multi_line);
-
         String wkt="";
 
         try{
@@ -447,7 +443,7 @@ public class DatabaseAccess {
             }
             if(parco!="") {
                 multi_parco.add(parco);
-               names_parco.add(nome_parco);
+                names_parco.add(nome_parco);
                 map[1]=createPolygon(multi_parco);
                 map[0]=names_parco;
             }
@@ -474,21 +470,16 @@ public class DatabaseAccess {
                 names_parco.add(parco);
                 map[1] = createPolygon(multi_parco);
 
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
- if (multi_line.size()!=0)
+        if (multi_line.size()!=0)
         {
             map[3]=createPolygon(multi_line);
             map[2]=names_comuni;
-
-
         }
-
 
         return map;
     }
@@ -627,14 +618,15 @@ public class DatabaseAccess {
             sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
 
-       polygon=createPolygon(multi_line);
-       comune_poly=createPolygon(comune);
+        polygon=createPolygon(multi_line);
+        comune_poly=createPolygon(comune);
         totalPolygon[0]=comune_poly;
         totalPolygon[1]=polygon;
 
         return totalPolygon;
     }
 
+    /**Questa query, dato un fiume, ritorna tutte le intersezioni con le strade**/
     public ArrayList<Polyline>[] queryStradeAttraversoFiumi(String name) {
 
         ArrayList<Polyline> array_final[] = new ArrayList[2];
@@ -659,8 +651,6 @@ public class DatabaseAccess {
 
             while (stmt.step()) {
                 String wkt = stmt.column_string(0);
-                //fiume = stmt.column_string(1);
-                //strada = stmt.column_string(1);
                 multi_line.add(wkt);
             }
             stmt.close();
@@ -698,7 +688,6 @@ public class DatabaseAccess {
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_parco=new ArrayList<>();
         StringBuilder sb=new StringBuilder();
-        HashMap<String,ArrayList<?>> map=new HashMap<>();
 
         String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Within(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
@@ -723,9 +712,8 @@ public class DatabaseAccess {
             }
             if(parco!="") {
                 multi_parco.add(parco);
-              array_final[1]=createPolygon(multi_parco);
+                array_final[1]=createPolygon(multi_parco);
             }
-
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -745,19 +733,16 @@ public class DatabaseAccess {
                 stmt.close();
 
                 multi_parco.add(parco);
-               array_final[1] = createPolygon(multi_parco);
-
+                array_final[1] = createPolygon(multi_parco);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
         if (multi_line.size()!=0)
         {
-           array_final[0]=createPolygon(multi_line);
-
+            array_final[0]=createPolygon(multi_line);
         }
 
         return array_final;
@@ -810,7 +795,7 @@ public class DatabaseAccess {
         }
 
         finale[0] = createPolyline(fiume_stringa);
-       finale[1] = createPolygon(comuni_stringa);
+        finale[1] = createPolygon(comuni_stringa);
 
         return finale;
     }
@@ -818,8 +803,6 @@ public class DatabaseAccess {
     /**
      * query spaziale che rende le strade e i parchi all'esterno di un determinato comune
      **/
-
-
 
     public  Object[] queryStradeComuneParchiDisjoint(String name) {
 
@@ -833,8 +816,7 @@ public class DatabaseAccess {
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<Polyline> strade = new ArrayList<>();
 
-
-       String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)),ASText(sistemaRegionaleParchi.Geometry) from DBTComune,reteStradale,sistemaRegionaleParchi WHERE " +
+        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)),ASText(sistemaRegionaleParchi.Geometry) from DBTComune,reteStradale,sistemaRegionaleParchi WHERE " +
                 "DBTComune.NOME = '"+name+"' AND ST_Disjoint(DBTComune.Geometry, reteStradale.Geometry) AND ST_Disjoint(DBTComune.Geometry, sistemaRegionaleParchi.Geometry) " +
                 "AND sistemaRegionaleParchi.ROWID IN" +
                 " (SELECT pkid"+
@@ -842,10 +824,10 @@ public class DatabaseAccess {
                 "     ymin <= MbrMaxY(reteStradale.Geometry) AND" +
                 "     xmax >= MbrMinX(reteStradale.Geometry) AND" +
                 "     ymax >= MbrMinY(reteStradale.Geometry)"+
-               "AND" +
-               "     ymin <= MbrMaxY(DBTComune.Geometry) AND" +
-               "     xmax >= MbrMinX(DBTComune.Geometry) AND" +
-               "     ymax >= MbrMinY(DBTComune.Geometry))"+
+                "AND" +
+                "     ymin <= MbrMaxY(DBTComune.Geometry) AND" +
+                "     xmax >= MbrMinX(DBTComune.Geometry) AND" +
+                "     ymax >= MbrMinY(DBTComune.Geometry))"+
                 " GROUP BY reteStradale.PK_UID, DBTComune.PK_UID;";
 
         String query_comune = "SELECT ASText(ST_GeometryN(Geometry,1)) from DBTComune where NOME = '"+name+"';";
@@ -858,7 +840,6 @@ public class DatabaseAccess {
                 String parco=stmt.column_string(1);
                 multi_line.add(wkt);
                 parchi.add(parco);
-
             }
             stmt.close();
         } catch (Exception e) {
@@ -866,7 +847,6 @@ public class DatabaseAccess {
         }
 
         strade=createPolyline(multi_line);
-
         String wkt="";
 
         try{
@@ -883,8 +863,7 @@ public class DatabaseAccess {
         }
 
         // mettere i punti trovati in un array per poi creare la polyline associata
-      parchi_res=createPolygon(parchi);
-
+        parchi_res=createPolygon(parchi);
 
         array_final[0] =strade;
         array_final[1] = parchi_res;
@@ -893,7 +872,68 @@ public class DatabaseAccess {
         return array_final;
     }
 
+    /**Query che prende in input un paese e restituisce i fiumi e le strade
+     * completamente contenuti all'interno **/
 
+    public Object[] comuniFiumiContenuti(String name) {
 
+        Object[] finale = new Object[3];
+        ArrayList<String> fiume_stringa = new ArrayList<>();
+        ArrayList<String> comuni_stringa = new ArrayList<>();
+        ArrayList<String> strade_stringa = new ArrayList<>();
+        finale[0] = new ArrayList<Polyline>();
+        finale[1] = new ArrayList<Polyline>();
+        finale[2] = new ArrayList<Polygon>();
+
+        String query_comune = "SELECT ASText(ST_GeometryN(DBTComune.Geometry, 1)) from DBTComune where nome = '"+name+"'";
+
+        String query = "SELECT ASText(ST_GeometryN(fiumi.Geometry, 1)), ASText(ST_GeometryN(strade.Geometry, 1))" +
+                " FROM DBTComune comuni, reteStradale strade, fiumiTorrenti_ARC fiumi " +
+                "where (ST_Contains(comuni.Geometry, fiumi.Geometry) and ST_Contains(comuni.Geometry, strade.Geometry)) " +
+                "AND comuni.nome='" + name + "' " +
+                "AND strade.ROWID IN " +
+                "(SELECT pkid " +
+                "FROM idx_reteStradale_geometry WHERE xmin <= MbrMaxX(comuni.Geometry) AND " +
+                "ymin <= MbrMaxY(comuni.Geometry) AND " +
+                "xmax >= MbrMinX(comuni.Geometry) AND " +
+                "ymax >= MbrMinY(comuni.Geometry)) " +
+                "AND fiumi.ROWID IN "  +
+                "(SELECT pkid " +
+                "FROM idx_fiumiTorrenti_ARC_geometry WHERE xmin <= MbrMaxX(comuni.Geometry) AND " +
+                "ymin <= MbrMaxY(comuni.Geometry) AND " +
+                "xmax >= MbrMinX(comuni.Geometry) AND " +
+                "ymax >= MbrMinY(comuni.Geometry)) " +
+                "GROUP BY strade.PK_UID, fiumi.PK_UID;";
+
+        try {
+            Stmt stmt = database.prepare(query);
+            while (stmt.step()) {
+                String wkt = stmt.column_string(1);
+                String wkt2 = stmt.column_string(0);
+                fiume_stringa.add(wkt2);
+                strade_stringa.add(wkt);
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Stmt stmt = database.prepare(query_comune);
+            while (stmt.step()) {
+                String wkt = stmt.column_string(0);
+                comuni_stringa.add(wkt);
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        finale[0] = createPolyline(fiume_stringa);
+        finale[1] = createPolygon(comuni_stringa);
+        finale[2] = createPolyline(strade_stringa);
+
+        return finale;
+    }
 }
 
