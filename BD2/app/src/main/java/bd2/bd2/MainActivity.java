@@ -239,7 +239,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
             case 8:
 
-                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i parchi nele vicinanze che non lo intersecano");
+                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i parchi nelle vicinanze che non lo intersecano");
 
                 break;
         }
