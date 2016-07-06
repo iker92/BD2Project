@@ -194,7 +194,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                 testo.setText("Questa query prende in input il nome di un fiume e restituisce i comuni che lo toccano");
                 break;
             case 8:
-                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i parchi nelle vicinanze che non lo intersecano");
+                testo.setText("Questa query prende in input il nome di un comune e restituisce le strade interne e i parchi intersecati dal comune");
                 break;
             case 9:
                 testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i fiumi completamente contenuti all'interno");

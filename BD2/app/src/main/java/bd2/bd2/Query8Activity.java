@@ -45,8 +45,10 @@ public class Query8Activity extends Activity {
     DatabaseAccess database = null;
     SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    SimpleMarkerSymbol sms_polygono = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    Object array_final[] = new Object [2];
+    SimpleMarkerSymbol sms_strade = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_fiumi = new SimpleMarkerSymbol(Color.BLACK, 4, SimpleMarkerSymbol.STYLE.CROSS);
+
+    Object array_final[] = new Object [4];
     private ProgressDialog pDialog;
 
 
@@ -146,7 +148,7 @@ public class Query8Activity extends Activity {
         protected Object [] doInBackground(String... strings) {
 
             String name=strings[0];
-            array_final=database.queryStradeComuneParchiDisjoint(name);
+            array_final=database.queryComuneParchiOverlapsStradeContains(name);
             return array_final;
         }
 
@@ -167,37 +169,40 @@ public class Query8Activity extends Activity {
             }
 
 
-            ArrayList<Polygon> parchi = (ArrayList<Polygon>)array_final[1];
-            ArrayList<Polyline> strade = (ArrayList<Polyline>) array_final[0];
-            ArrayList<Polygon> comune=(ArrayList<Polygon>) array_final[2];
+            ArrayList<Polygon> parchi = (ArrayList<Polygon>)array_final[0];
+            ArrayList<Polygon> comune=(ArrayList<Polygon>) array_final[1];
+            ArrayList<Polyline> strade=(ArrayList<Polyline>) array_final[2];
 
 
 
-            Graphic [] graphics = new Graphic[parchi.size()];
-            Graphic [] graphicsPolygono =  new Graphic[strade.size()];
+
+            Graphic [] graphicsParchi = new Graphic[parchi.size()];
+            Graphic [] graphicsStrade = new Graphic[strade.size()];
+
             Graphic graphicComune=new Graphic(comune.get(0),sms);
 
-            GraphicsLayer layer_intersezioni = new GraphicsLayer();
-            GraphicsLayer layer_poligono = new GraphicsLayer();
+            GraphicsLayer layer_parchi = new GraphicsLayer();
+            GraphicsLayer layer_strade = new GraphicsLayer();
             GraphicsLayer layer_Comune=new GraphicsLayer();
 
             layer_Comune.addGraphic(graphicComune);
 
             for (int i = 0; i <parchi.size() ; i++) {
 
-                graphics[i]=new Graphic(parchi.get(i),sms_poly);
+                graphicsParchi[i]=new Graphic(parchi.get(i),sms_poly);
             }
-            layer_intersezioni.addGraphics(graphics);
+            layer_parchi.addGraphics(graphicsParchi);
 
             for (int i = 0; i <strade.size() ; i++) {
 
-                graphicsPolygono[i]=new Graphic(strade.get(i),sms_polygono);
+                graphicsStrade[i]=new Graphic(strade.get(i),sms_strade);
             }
-            layer_intersezioni.addGraphics(graphicsPolygono);
+            layer_strade.addGraphics(graphicsStrade);
 
-            mMapView.addLayer(layer_poligono);
-            mMapView.addLayer(layer_intersezioni);
+            mMapView.addLayer(layer_strade);
+            mMapView.addLayer(layer_parchi);
             mMapView.addLayer(layer_Comune);
+
 
         }
     }
