@@ -20,9 +20,6 @@ import com.esri.core.symbol.SimpleMarkerSymbol;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- * Created by Alessio on 29/06/2016.
- */
 public class Query5Activity extends Activity {
 
 

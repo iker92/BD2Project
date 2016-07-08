@@ -1,9 +1,5 @@
 package bd2.bd2;
 
-/**
- * Created by alex_ on 18/06/2016.
- */
-
 import android.content.Context;
 import jsqlite.*;
 import jsqlite.Exception;
@@ -151,7 +147,7 @@ public class DatabaseAccess {
                     second = second.substring(0, second.length() - 1);
                 }
 
-                // mettere i punti trovati in un array per poi creare la polyline associata
+                // mettere i punti trovati in un array per poi creare il polygon associato
                 double x = Double.parseDouble(first);
                 double y = Double.parseDouble(second);
                 Point point = new Point(x, y);
@@ -177,7 +173,6 @@ public class DatabaseAccess {
         for (int i = 0; i < multi_line.size(); i++) {
 
             Polyline poly2 = new Polyline();
-            // mettere i punti trovati in un array per poi creare la polyline associata
             String pointStr = String.valueOf(multi_line.get(i).subSequence(11, multi_line.get(i).length()));
             String[] split_comma = pointStr.split("\\s*,\\s*");
 
@@ -216,8 +211,8 @@ public class DatabaseAccess {
     }
 
     /**
-     * query spaziale che rende e strade che toccano più di un comune
-     * che tocca un determinato parco naturale
+     * query spaziale che rende le strade che passano nei comuni
+     * che toccano un determinato parco naturale
      **/
 
     public Object[] queryStradeComuniParco(String name) {
@@ -260,7 +255,7 @@ public class DatabaseAccess {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(comuni.size()>=2) {
+        if(nomi_comuni.size()>=1) {
             for (int i = 0; i < nomi_comuni.size(); i++) {
 
                 String query_strade = "SELECT ASText(ST_GeometryN(reteStradale.Geometry,1)) " +
@@ -367,7 +362,6 @@ public class DatabaseAccess {
             e.printStackTrace();
         }
 
-        // mettere i punti trovati in un array per poi creare la polyline associata
         comune_res=createPolygon(comuni_nomi);
 
         array_final[0] =comune_res;
@@ -389,7 +383,6 @@ public class DatabaseAccess {
         ArrayList<Polygon>[] polygon = new ArrayList[2];
         polygon[0]=new ArrayList<>();
         polygon[1]=new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
 
         String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
@@ -401,7 +394,6 @@ public class DatabaseAccess {
                 "GROUP BY comune.PK_UID;";
 
         try {
-            sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
             String parco="";
             Stmt stmt = database.prepare(query);
 
@@ -426,7 +418,6 @@ public class DatabaseAccess {
             String query_parco = "SELECT ASText(parchi.Geometry) FROM sistemaRegionaleParchi parchi WHERE parchi.nome='"+name+"';";
 
             try {
-                sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
                 String parco = "";
                 Stmt stmt = database.prepare(query_parco);
 
@@ -458,45 +449,31 @@ public class DatabaseAccess {
 
     /**
      * prima query spaziale che rende dei punti che individuano
-     * i paesi che toccano i bordi di Decimoputzu
+     * i paesi che toccano i bordi di un determinato comune
      **/
     public ArrayList<Point> queryComuniNearbyCentroid(String name) {
 
         ArrayList<Point> point_result = new ArrayList<>();
         ArrayList<String> punti = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        sb.append("Query Comuni nearby...\n");
 
-        String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))), ST_Srid(Geometry), ST_GeometryType(Geometry) from DBTComune" +
+        String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))) from DBTComune" +
                 " where NOME = '"+name+"';";
-        sb.append("Execute query: ").append(query).append("\n");
         String bufferGeom = "";
-        String bufferGeomShort = "";
 
         try {
             Stmt stmt = database.prepare(query);
             if (stmt.step()) {
                 bufferGeom = stmt.column_string(0);
-                String geomSrid = stmt.column_string(1);
-                String geomType = stmt.column_string(2);
-                sb.append("\tThe selected geometry is of type: ").append(geomType).append(" and of SRID: ").append(geomSrid).append("\n");
             }
 
-            System.out.println(sb);
-            bufferGeomShort = bufferGeom;
-            if (bufferGeom.length() > 10)
-                bufferGeomShort = bufferGeom.substring(0, 10) + "...";
-            sb.append("\t"+name+" polygon buffer geometry in HEX: ").append(bufferGeomShort).append("\n");
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
-            sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
 
         query = "SELECT  NOME , ASText(ST_centroid(ST_GeometryN(Geometry,1))) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry);";
 
         try {
-            sb.append("\tComuni nearby "+name+": \n");
             Stmt stmt = database.prepare(query);
 
             while (stmt.step()) {
@@ -509,7 +486,6 @@ public class DatabaseAccess {
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
-            sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
         if(punti.size()!=0){
             point_result=createPoint(punti);
@@ -521,7 +497,7 @@ public class DatabaseAccess {
 
     /**
      * seconda query spaziale che rende i poligoni che individuano
-     * i paesi che toccano i bordi di Decimoputzu
+     * i paesi che toccano i bordi di un determinato comune
      **/
     public ArrayList<Polygon> [] queryComuniNearbyPolygon(String name) {
 
@@ -530,33 +506,20 @@ public class DatabaseAccess {
         ArrayList<Polygon> [] totalPolygon=new ArrayList[2];
         totalPolygon[0]=new ArrayList<>();
         totalPolygon[1]=new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        sb.append("Query Comuni nearby...\n");
 
-        String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))), ST_Srid(Geometry), ST_GeometryType(Geometry) from DBTComune" +
+        String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))) from DBTComune" +
                 " where NOME = '"+name+"';";
-        sb.append("Execute query: ").append(query).append("\n");
         String bufferGeom = "";
-        String bufferGeomShort = "";
 
         try {
             Stmt stmt = database.prepare(query);
             if (stmt.step()) {
                 bufferGeom = stmt.column_string(0);
-                String geomSrid = stmt.column_string(1);
-                String geomType = stmt.column_string(2);
-                sb.append("\tThe selected geometry is of type: ").append(geomType).append(" and of SRID: ").append(geomSrid).append("\n");
             }
 
-            System.out.println(sb);
-            bufferGeomShort = bufferGeom;
-            if (bufferGeom.length() > 10)
-                bufferGeomShort = bufferGeom.substring(0, 10) + "...";
-            sb.append("\tDecimoputzu polygon buffer geometry in HEX: ").append(bufferGeomShort).append("\n");
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
-            sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
 
         query = "SELECT NOME, ASText(ST_GeometryN(Geometry,1)) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry)"+
@@ -571,7 +534,6 @@ public class DatabaseAccess {
         ArrayList<String> comune=new ArrayList<>();
 
         try {
-            sb.append("\tComuni nearby Decimoputzu: \n");
             Stmt stmt = database.prepare(query);
 
             while (stmt.step()) {
@@ -590,7 +552,6 @@ public class DatabaseAccess {
 
         } catch (Exception e) {
             e.printStackTrace();
-            sb.append(ERROR).append(e.getLocalizedMessage()).append("\n");
         }
 
         if (multi_line.size()!=0){
@@ -604,6 +565,11 @@ public class DatabaseAccess {
 
         return totalPolygon;
     }
+
+
+    /**
+     * query spaziale che rende  le strade che attraversano un determinato fiume
+     **/
 
     public ArrayList<Polyline>[] queryStradeAttraversoFiumi(String name) {
 
@@ -664,7 +630,7 @@ public class DatabaseAccess {
     }
 
 
-    /**Query che rende tutti i comuni contenuti in un parco**/
+    /**Query spaziale che rende tutti i comuni contenuti in un parco**/
 
     public ArrayList<Polygon>[] queryComunibyParco(String name){
 
@@ -673,7 +639,6 @@ public class DatabaseAccess {
         array_final[1]=new ArrayList<Polygon>();
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_parco=new ArrayList<>();
-        StringBuilder sb=new StringBuilder();
 
         String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Within(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
@@ -685,7 +650,6 @@ public class DatabaseAccess {
                 "GROUP BY comune.PK_UID;";
 
         try {
-            sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
             String parco="";
             Stmt stmt = database.prepare(query);
 
@@ -710,7 +674,6 @@ public class DatabaseAccess {
             String query_parco = "SELECT ASText(parchi.Geometry) FROM sistemaRegionaleParchi parchi WHERE parchi.nome='"+name+"';";
 
             try {
-                sb.append("\tComuni che toccano Gennargentu e Golfo di Orosei: \n");
                 String parco = "";
                 Stmt stmt = database.prepare(query_parco);
 
@@ -738,7 +701,7 @@ public class DatabaseAccess {
         return array_final;
     }
 
-    /**Query che rende tutti i comuni che toccano un determinato fiume**/
+    /**Query spaziale che rende tutti i comuni che toccano un determinato fiume**/
 
     public Object[] comuniViciniFiume(String name){
 
@@ -901,7 +864,6 @@ public class DatabaseAccess {
 
         strade = createPolyline(multi_line);
 
-        // mettere i punti trovati in un array per poi creare la polyline associata
         parchi_res=createPolygon(parchi);
 
         array_final[0] = parchi_res;
@@ -911,7 +873,7 @@ public class DatabaseAccess {
         return array_final;
     }
 
-    /**Query che prende in input un paese e restituisce i fiumi e le strade
+    /**Query spaziale che prende in input un paese e restituisce i fiumi e le strade
      * completamente contenuti all'interno **/
 
     public Object[] comuniFiumiContenuti(String name) {
@@ -989,6 +951,10 @@ public class DatabaseAccess {
     }
 
 
+    /**
+     * query spaziale che rende, dato un parco, i fiumi completamenete contenui dentro al parco, le strade che attraversano
+     * il parco e i comuni attraversati dalle strade trovate
+     **/
 
     public Object [] queryAll(String name){
         Object [] array_final=new Object[4];

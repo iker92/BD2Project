@@ -18,9 +18,6 @@ import com.esri.core.symbol.SimpleMarkerSymbol;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- * Created by Alessio on 01/07/2016.
- */
 public class Query6Activity extends Activity {
 
     MapView mMapView;

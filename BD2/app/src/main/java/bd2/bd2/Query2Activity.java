@@ -21,9 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import jsqlite.Exception;
 
-/**
- * Created by Crilly on 24/06/2016.
- */
 public class Query2Activity extends Activity {
     MapView mMapView;
     private static final String KEY_MAPSTATE = "mapState";

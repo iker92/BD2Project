@@ -180,7 +180,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
         switch(position) {
             case 1:
-                testo.setText("Questa query prende in input il nome di un comune e restituisce i comuni confinanti");
+                testo.setText("Questa query prende in input il nome di un comune e restituisce i comuni confinanti e i loro centroidi");
                 break;
             case 2:
                 testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti");
@@ -192,7 +192,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                 testo.setText("Questa query prende in input il nome di un comune e restituisce le strade passanti per il comune");
                 break;
             case 5:
-                testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti e le strade che passano per più di un comune confinante col parco");
+                testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni confinanti e le strade che passano in quei comuni");
                 break;
             case 6:
                 testo.setText("Questa query prende in input il nome di un parco e restituisce i comuni completamente dentro il parco");
