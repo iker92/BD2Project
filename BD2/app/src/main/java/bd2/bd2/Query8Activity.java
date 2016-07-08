@@ -43,10 +43,9 @@ public class Query8Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
-    SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    SimpleMarkerSymbol sms_strade = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    SimpleMarkerSymbol sms_fiumi = new SimpleMarkerSymbol(Color.BLACK, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_comuni = new SimpleMarkerSymbol(Color.MAGENTA, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_parco = new SimpleMarkerSymbol(Color.CYAN, 4, SimpleMarkerSymbol.STYLE.DIAMOND);
+    SimpleMarkerSymbol sms_strade = new SimpleMarkerSymbol(Color.BLACK, 4, SimpleMarkerSymbol.STYLE.CROSS);
 
     Object array_final[] = new Object [4];
     private ProgressDialog pDialog;
@@ -178,26 +177,29 @@ public class Query8Activity extends Activity {
 
             Graphic [] graphicsParchi = new Graphic[parchi.size()];
             Graphic [] graphicsStrade = new Graphic[strade.size()];
-
-            Graphic graphicComune=new Graphic(comune.get(0),sms);
+            Graphic graphicComune=new Graphic(comune.get(0),sms_comuni);
 
             GraphicsLayer layer_parchi = new GraphicsLayer();
             GraphicsLayer layer_strade = new GraphicsLayer();
             GraphicsLayer layer_Comune=new GraphicsLayer();
 
-            layer_Comune.addGraphic(graphicComune);
-
-            for (int i = 0; i <parchi.size() ; i++) {
-
-                graphicsParchi[i]=new Graphic(parchi.get(i),sms_poly);
+            if(comune.size()!=0) {
+                layer_Comune.addGraphic(graphicComune);
             }
-            layer_parchi.addGraphics(graphicsParchi);
+            if(parchi.size()!=0) {
+                for (int i = 0; i < parchi.size(); i++) {
 
-            for (int i = 0; i <strade.size() ; i++) {
-
-                graphicsStrade[i]=new Graphic(strade.get(i),sms_strade);
+                    graphicsParchi[i] = new Graphic(parchi.get(i), sms_parco);
+                }
+                layer_parchi.addGraphics(graphicsParchi);
             }
-            layer_strade.addGraphics(graphicsStrade);
+            if(strade.size()!=0) {
+                for (int i = 0; i < strade.size(); i++) {
+
+                    graphicsStrade[i] = new Graphic(strade.get(i), sms_strade);
+                }
+                layer_strade.addGraphics(graphicsStrade);
+            }
 
             mMapView.addLayer(layer_strade);
             mMapView.addLayer(layer_parchi);

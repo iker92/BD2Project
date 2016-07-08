@@ -45,7 +45,7 @@ public class Query9Activity extends Activity {
     DatabaseAccess database = null;
     SimpleMarkerSymbol sms_fiume = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     SimpleMarkerSymbol sms_comuni = new SimpleMarkerSymbol(Color.MAGENTA, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    SimpleMarkerSymbol sms_parco = new SimpleMarkerSymbol(Color.CYAN, 4, SimpleMarkerSymbol.STYLE.DIAMOND);
+    SimpleMarkerSymbol sms_strade = new SimpleMarkerSymbol(Color.BLACK, 4, SimpleMarkerSymbol.STYLE.CROSS);
 
     Object array_final[] = new Object [2];
     private ProgressDialog pDialog;
@@ -178,24 +178,27 @@ public class Query9Activity extends Activity {
             GraphicsLayer layer_comuni = new GraphicsLayer();
             GraphicsLayer layer_strade = new GraphicsLayer();
 
-            for (int i = 0; i < fiume.size() ; i++) {
+            if(fiume.size()!=0) {
+                for (int i = 0; i < fiume.size(); i++) {
 
-                graphicFiume[i] = new Graphic(fiume.get(i), sms_fiume);
+                    graphicFiume[i] = new Graphic(fiume.get(i), sms_fiume);
+                }
+                layer_fiume.addGraphics(graphicFiume);
             }
+            if(comuni.size()!=0) {
+                for (int i = 0; i < comuni.size(); i++) {
 
-            for (int i = 0; i < comuni.size() ; i++) {
-
-                graphics[i] = new Graphic(comuni.get(i), sms_comuni);
+                    graphics[i] = new Graphic(comuni.get(i), sms_comuni);
+                }
+                layer_comuni.addGraphics(graphics);
             }
+            if(strade.size()!=0) {
+                for (int i = 0; i < strade.size(); i++) {
 
-            for (int i = 0; i < strade.size() ; i++) {
-
-                graphicStrade[i] = new Graphic(strade.get(i), sms_parco);
+                    graphicStrade[i] = new Graphic(strade.get(i), sms_strade);
+                }
+                layer_strade.addGraphics(graphicStrade);
             }
-
-            layer_fiume.addGraphics(graphicFiume);
-            layer_strade.addGraphics(graphicStrade);
-            layer_comuni.addGraphics(graphics);
 
             mMapView.addLayer(layer_comuni);
             mMapView.addLayer(layer_fiume);

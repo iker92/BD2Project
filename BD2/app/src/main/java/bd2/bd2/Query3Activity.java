@@ -41,9 +41,9 @@ public class Query3Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
+    SimpleMarkerSymbol sms_strade = new SimpleMarkerSymbol(Color.BLACK, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_fiume = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     ArrayList<Polyline> array_final[] = new ArrayList[2];
-    SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
     private ProgressDialog pDialog;
 
     @Override
@@ -158,26 +158,33 @@ public class Query3Activity extends Activity {
             if (pDialog.isShowing()) {
                 pDialog.dismiss();
             }
-            Graphic [] graphics=new Graphic[array_final[0].size()];
-            Graphic [] graphics1=new Graphic[array_final[1].size()];
+
+            ArrayList<Polyline> strade=(ArrayList<Polyline>)array_final[0];
+            ArrayList<Polyline> fiumi=(ArrayList<Polyline>)array_final[1];
+            Graphic [] graphicsIntersezioni=new Graphic[strade.size()];
+            Graphic [] graphicsFiume=new Graphic[fiumi.size()];
 
             //aggiungo i punti al layer di queryComuniNearByPolygon
-            GraphicsLayer layer_intersezioni=new GraphicsLayer();
+            GraphicsLayer layer_strade=new GraphicsLayer();
             GraphicsLayer layer_fiume=new GraphicsLayer();
-            for (int i = 0; i <array_final[0].size() ; i++) {
+            if(strade.size()!=0) {
+                for (int i = 0; i < strade.size(); i++) {
 
-                graphics[i]=new Graphic(array_final[0].get(i),sms);
+                    graphicsIntersezioni[i] = new Graphic(strade.get(i), sms_strade);
 
+                }
+                layer_strade.addGraphics(graphicsIntersezioni);
             }
-            layer_intersezioni.addGraphics(graphics);
-            for (int i = 0; i <array_final[1].size() ; i++) {
+            if(fiumi.size()!=0) {
+                for (int i = 0; i < fiumi.size(); i++) {
 
-                graphics1[i]=new Graphic(array_final[1].get(i),sms_poly);
+                    graphicsFiume[i] = new Graphic(fiumi.get(i), sms_fiume);
+                }
+                layer_fiume.addGraphics(graphicsFiume);
             }
-            layer_fiume.addGraphics(graphics1);
 
             mMapView.addLayer(layer_fiume);
-            mMapView.addLayer(layer_intersezioni);
+            mMapView.addLayer(layer_strade);
         }
     }
 

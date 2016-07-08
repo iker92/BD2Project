@@ -2,7 +2,6 @@ package bd2.bd2;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -21,10 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by Alessio on 29/06/2016.
+ * Created by Alessio on 06/07/2016.
  */
-public class Query5Activity extends Activity {
-
+public class Query10Activity extends Activity {
 
     MapView mMapView;
     private static final String KEY_MAPSTATE = "mapState";
@@ -43,10 +41,12 @@ public class Query5Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
+    SimpleMarkerSymbol sms_fiume = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     SimpleMarkerSymbol sms_comuni = new SimpleMarkerSymbol(Color.MAGENTA, 4, SimpleMarkerSymbol.STYLE.CROSS);
     SimpleMarkerSymbol sms_parco = new SimpleMarkerSymbol(Color.CYAN, 4, SimpleMarkerSymbol.STYLE.DIAMOND);
     SimpleMarkerSymbol sms_strade = new SimpleMarkerSymbol(Color.BLACK, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    Object array_final[] = new Object [3];
+
+    Object array_final[] = new Object [4];
     private ProgressDialog pDialog;
 
 
@@ -68,9 +68,6 @@ public class Query5Activity extends Activity {
         }
 
         new BackgroundTask().execute(name);
-
-
-
 
         if (savedInstanceState != null) {
             mMapState = savedInstanceState.getString(KEY_MAPSTATE, null);
@@ -145,18 +142,19 @@ public class Query5Activity extends Activity {
         protected Object [] doInBackground(String... strings) {
 
             String name=strings[0];
-            array_final=database.queryStradeComuniParco(name);
+            array_final=database.queryAll(name);
             return array_final;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog = new ProgressDialog(Query5Activity.this);
+            pDialog = new ProgressDialog(Query10Activity.this);
             pDialog.setMessage("Query in esecuzione...");
             pDialog.setCancelable(false);
             pDialog.show();
         }
+
         @Override
         protected void onPostExecute(Object []aVoid) {
             super.onPostExecute(aVoid);
@@ -165,45 +163,55 @@ public class Query5Activity extends Activity {
                 pDialog.dismiss();
             }
 
-            ArrayList<Polygon> parco=(ArrayList<Polygon>) array_final[0];
-            ArrayList<Polyline> strade = (ArrayList<Polyline>)array_final[1];
+            ArrayList<Polyline> fiume = (ArrayList<Polyline>) array_final[1];
+           ArrayList<Polyline> strade = (ArrayList<Polyline>) array_final[0];
+            ArrayList<Polygon> parchi=(ArrayList<Polygon>) array_final[3];
             ArrayList<Polygon> comuni = (ArrayList<Polygon>) array_final[2];
 
 
-            Graphic graphicParco = new Graphic(parco.get(0),sms_parco);
-            Graphic [] graphicstrade = new Graphic[strade.size()];
-            Graphic [] graphicComune =  new Graphic[comuni.size()];
+            Graphic [] graphicFiume = new Graphic[fiume.size()];
+            Graphic [] graphicsComuni = new Graphic[comuni.size()];
+            Graphic [] graphicStrade = new Graphic[strade.size()];
+            Graphic [] graphicParchi = new Graphic[parchi.size()];
 
-            GraphicsLayer layer_intersezioni = new GraphicsLayer();
-            GraphicsLayer layer_poligono = new GraphicsLayer();
+            GraphicsLayer layer_fiume = new GraphicsLayer();
+            GraphicsLayer layer_comuni = new GraphicsLayer();
+            GraphicsLayer layer_strade = new GraphicsLayer();
+            GraphicsLayer layer_parchi = new GraphicsLayer();
 
-            if(parco!=null) {
-                layer_poligono.addGraphic(graphicParco);
+            if(fiume.size()!=0) {
+                for (int i = 0; i < fiume.size(); i++) {
+
+                    graphicFiume[i] = new Graphic(fiume.get(i), sms_fiume);
+                }
+                layer_fiume.addGraphics(graphicFiume);
+            }
+            if(comuni.size()!=0) {
+                for (int i = 0; i < comuni.size(); i++) {
+
+                    graphicsComuni[i] = new Graphic(comuni.get(i), sms_comuni);
+                }
+                layer_comuni.addGraphics(graphicsComuni);
             }
             if(strade.size()!=0) {
                 for (int i = 0; i < strade.size(); i++) {
 
-                    graphicstrade[i] = new Graphic(strade.get(i), sms_strade);
+                    graphicStrade[i] = new Graphic(strade.get(i), sms_strade);
                 }
-                layer_intersezioni.addGraphics(graphicstrade);
+                layer_strade.addGraphics(graphicStrade);
+            }
+            if(parchi.size()!=0) {
+                for (int i = 0; i < parchi.size(); i++) {
+
+                    graphicParchi[i] = new Graphic(parchi.get(i), sms_parco);
+                }
+                layer_parchi.addGraphics(graphicParchi);
             }
 
-            if(comuni.size()!=0) {
-                for (int i = 0; i < comuni.size(); i++) {
-
-                    graphicComune[i] = new Graphic(comuni.get(i), sms_comuni);
-                }
-                layer_intersezioni.addGraphics(graphicComune);
-            }
-
-            mMapView.addLayer(layer_poligono);
-            mMapView.addLayer(layer_intersezioni);
-
+            mMapView.addLayer(layer_comuni);
+            mMapView.addLayer(layer_parchi);
+            mMapView.addLayer(layer_fiume);
+            mMapView.addLayer(layer_strade);
         }
     }
-
-
-
 }
-
-

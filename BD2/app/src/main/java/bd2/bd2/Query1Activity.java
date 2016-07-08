@@ -40,12 +40,12 @@ public class Query1Activity extends Activity {
 
     DatabaseAccess database = null;
     ArrayList<Point> points;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
+    SimpleMarkerSymbol sms_punti = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
     GraphicsLayer layer = new GraphicsLayer();
     Point p;
     ArrayList<Polygon> [] polygons;
-    SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    SimpleMarkerSymbol sms_poly1 = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_comuni = new SimpleMarkerSymbol(Color.MAGENTA, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_comuniVicini = new SimpleMarkerSymbol(Color.YELLOW, 4, SimpleMarkerSymbol.STYLE.CROSS);
     private ProgressDialog pDialog;
 
     @Override
@@ -66,7 +66,7 @@ public class Query1Activity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-new BackgroundTask().execute(name);
+        new BackgroundTask().execute(name);
 
         if (savedInstanceState != null) {
             mMapState = savedInstanceState.getString(KEY_MAPSTATE, null);
@@ -161,37 +161,43 @@ new BackgroundTask().execute(name);
             }
             /**Trovo i centroidi**/
 
+            ArrayList<Point> punti=points;
 
             //aggiungo i punti al layer di queryComuniNearByCentroid
-            for (int i = 0; i < points.size(); i++) {
+            for (int i = 0; i < punti.size(); i++) {
 
-                p = points.get(i);
-                layer.addGraphic(new Graphic(p, sms));
+                p = punti.get(i);
+                layer.addGraphic(new Graphic(p, sms_punti));
             }
             mMapView.addLayer(layer);
 
             /**Trovo i poligoni***/
 
+            ArrayList<Polygon> comune=polygons[0];
+            ArrayList<Polygon> comuniVicini=polygons[1];
+            GraphicsLayer layer_comune = new GraphicsLayer();
+            GraphicsLayer layer_comuniVicini = new GraphicsLayer();
+            if(comune.size()!=0) {
 
-            Graphic graphics=new Graphic(polygons[0].get(0),sms_poly1);
+                Graphic graphicsComune = new Graphic(comune.get(0), sms_comuni);
 
-            //aggiungo i punti al layer di queryComuniNearByPolygon
-            GraphicsLayer layer_poly=new GraphicsLayer();
-            layer_poly.addGraphic(graphics);
+                //aggiungo i punti al layer di queryComuniNearByPolygon
 
+                layer_comune.addGraphic(graphicsComune);
 
-            Graphic [] graphics1=new Graphic[polygons[1].size()];
-            GraphicsLayer layer_poly1=new GraphicsLayer();
-            //aggiungo i punti al layer di queryComuniNearByPolygon
-            for (int i = 0; i <polygons[1].size() ; i++) {
-
-                graphics1[i]=new Graphic(polygons[1].get(i),sms_poly);
             }
-            layer_poly1.addGraphics(graphics1);
+            if(comuniVicini.size()!=0) {
+                Graphic[] graphicsComuniVicini = new Graphic[comuniVicini.size()];
 
-            mMapView.addLayer(layer_poly1);
-            mMapView.addLayer(layer_poly);
+                //aggiungo i punti al layer di queryComuniNearByPolygon
+                for (int i = 0; i < polygons[1].size(); i++) {
 
+                    graphicsComuniVicini[i] = new Graphic(comuniVicini.get(i), sms_comuniVicini);
+                }
+                layer_comuniVicini.addGraphics(graphicsComuniVicini);
+            }
+            mMapView.addLayer(layer_comuniVicini);
+            mMapView.addLayer(layer_comune);
         }
     }
 

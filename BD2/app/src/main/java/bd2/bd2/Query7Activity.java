@@ -169,22 +169,25 @@ public class Query7Activity extends Activity {
 
             Graphic[] graphicFiume = new Graphic[fiume.size()];
             Graphic [] graphics = new Graphic[comuni.size()];
-
-            for (int i = 0; i < fiume.size() ; i++) {
-
-                graphicFiume[i] = new Graphic(fiume.get(i), sms_fiume);
-            }
-
             GraphicsLayer layer_fiume = new GraphicsLayer();
             GraphicsLayer layer_comuni = new GraphicsLayer();
-            layer_fiume.addGraphics(graphicFiume);
 
-            for (int i = 0; i < comuni.size() ; i++) {
+            if(fiume.size()!=0) {
+                for (int i = 0; i < fiume.size(); i++) {
 
-                graphics[i] = new Graphic(comuni.get(i), sms_comuni);
+                    graphicFiume[i] = new Graphic(fiume.get(i), sms_fiume);
+                }
+                layer_fiume.addGraphics(graphicFiume);
             }
 
-            layer_comuni.addGraphics(graphics);
+            if(comuni.size()!=0) {
+                for (int i = 0; i < comuni.size(); i++) {
+
+                    graphics[i] = new Graphic(comuni.get(i), sms_comuni);
+                }
+
+                layer_comuni.addGraphics(graphics);
+            }
 
             mMapView.addLayer(layer_comuni);
             mMapView.addLayer(layer_fiume);

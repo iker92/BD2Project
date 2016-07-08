@@ -40,8 +40,8 @@ public class Query6Activity extends Activity {
     double mResultY = Double.NaN;
 
     DatabaseAccess database = null;
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.RED, 4, SimpleMarkerSymbol.STYLE.CIRCLE);
-    SimpleMarkerSymbol sms_poly = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_comuni = new SimpleMarkerSymbol(Color.MAGENTA, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_parco = new SimpleMarkerSymbol(Color.CYAN, 4, SimpleMarkerSymbol.STYLE.DIAMOND);
     ArrayList<Polygon> polygons []=new ArrayList[2];
     private ProgressDialog pDialog;
 
@@ -154,29 +154,33 @@ public class Query6Activity extends Activity {
             if (pDialog.isShowing()) {
                 pDialog.dismiss();
             }
+
+            ArrayList<Polygon> parchi=(ArrayList<Polygon>) polygons[1];
+            ArrayList<Polygon> comuni = (ArrayList<Polygon>) polygons[0];
+
             GraphicsLayer layer_poly = new GraphicsLayer();
-            if(polygons[0].size()!=0) {
+            if(comuni.size()!=0) {
 
 
-                Graphic[] graphics = new Graphic[polygons[0].size()];
+                Graphic[] graphicsComuni = new Graphic[comuni.size()];
 
 
-                for (int i = 0; i < polygons[0].size(); i++) {
+                for (int i = 0; i < comuni.size(); i++) {
 
-                    graphics[i] = new Graphic(polygons[0].get(i), sms);
+                    graphicsComuni[i] = new Graphic(comuni.get(i), sms_comuni);
                 }
-                layer_poly.addGraphics(graphics);
+                layer_poly.addGraphics(graphicsComuni);
             }
 
-            if(polygons[1].size()!=0) {
-                Graphic[] graphics1 = new Graphic[polygons[1].size()];
+            if(parchi.size()!=0) {
+                Graphic[] graphicsParchi = new Graphic[parchi.size()];
 
 
                 for (int i = 0; i < polygons[1].size(); i++) {
 
-                    graphics1[i] = new Graphic(polygons[1].get(i), sms_poly);
+                    graphicsParchi[i] = new Graphic(parchi.get(i), sms_parco);
                 }
-                layer_poly.addGraphics(graphics1);
+                layer_poly.addGraphics(graphicsParchi);
             }
 
 

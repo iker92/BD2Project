@@ -13,6 +13,7 @@ import com.esri.android.map.event.OnStatusChangedListener;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
+import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleMarkerSymbol;
@@ -42,8 +43,8 @@ public class Query2Activity extends Activity {
 
     DatabaseAccess database = null;
     ArrayList<Polygon> polygons []=new ArrayList[2];
-    SimpleMarkerSymbol sms = new SimpleMarkerSymbol(Color.BLUE, 4, SimpleMarkerSymbol.STYLE.CROSS);
-    SimpleMarkerSymbol sms1 = new SimpleMarkerSymbol(Color.GREEN, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_comuni = new SimpleMarkerSymbol(Color.MAGENTA, 4, SimpleMarkerSymbol.STYLE.CROSS);
+    SimpleMarkerSymbol sms_parco = new SimpleMarkerSymbol(Color.CYAN, 4, SimpleMarkerSymbol.STYLE.DIAMOND);
     private ProgressDialog pDialog;
 
     @Override
@@ -155,29 +156,32 @@ public class Query2Activity extends Activity {
             if (pDialog.isShowing()) {
                 pDialog.dismiss();
             }
+
+            ArrayList<Polygon> comuni=(ArrayList<Polygon>)polygons[0];
+            ArrayList<Polygon> parchi=(ArrayList<Polygon>)polygons[1];
             GraphicsLayer layer_poly = new GraphicsLayer();
-            if(polygons[0].size()!=0) {
+            if(comuni.size()!=0) {
 
 
-                Graphic[] graphics = new Graphic[polygons[0].size()];
+                Graphic[] graphicsComuni= new Graphic[comuni.size()];
 
 
-                for (int i = 0; i < polygons[0].size(); i++) {
+                for (int i = 0; i <comuni.size(); i++) {
 
-                    graphics[i] = new Graphic(polygons[0].get(i), sms);
+                    graphicsComuni[i] = new Graphic(comuni.get(i), sms_comuni);
                 }
-                layer_poly.addGraphics(graphics);
+                layer_poly.addGraphics(graphicsComuni);
             }
 
-            if(polygons[1]!=null) {
-                Graphic[] graphics1 = new Graphic[polygons[1].size()];
+            if(parchi!=null) {
+                Graphic[] graphicsParchi = new Graphic[parchi.size()];
 
 
-                for (int i = 0; i < polygons[1].size(); i++) {
+                for (int i = 0; i <parchi.size(); i++) {
 
-                    graphics1[i] = new Graphic(polygons[1].get(i), sms1);
+                    graphicsParchi[i] = new Graphic(parchi.get(i), sms_parco);
                 }
-                layer_poly.addGraphics(graphics1);
+                layer_poly.addGraphics(graphicsParchi);
             }
 
 

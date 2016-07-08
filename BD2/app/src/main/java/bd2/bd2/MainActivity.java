@@ -1,6 +1,7 @@
 package bd2.bd2;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,6 +53,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         queryes.add("Query7");
         queryes.add("Query8");
         queryes.add("Query9");
+        queryes.add("Query10");
 
         try {
             databaseAccess = DatabaseAccess.getInstance(this);
@@ -112,6 +115,10 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                         break;
                     case 9:
                         intent=new Intent(MainActivity.this,Query9Activity.class);
+                        intent.putExtra("name",name);
+                        break;
+                    case 10:
+                        intent=new Intent(MainActivity.this,Query10Activity.class);
                         intent.putExtra("name",name);
                         break;
                 }
@@ -198,6 +205,9 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                 break;
             case 9:
                 testo.setText("Questa query prende in input il nome di un comune e restituisce le strade e i fiumi completamente contenuti all'interno");
+                break;
+            case 10:
+                testo.setText("Questa query prende in input il nome di un parco e restituisce i fiumi completamente contenuti al parco , le strade passanti per il parco e i comuni in cui passano quelle strade");
                 break;
         }
     }

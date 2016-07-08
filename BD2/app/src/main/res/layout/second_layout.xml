@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         mapoptions.MapType="Topo"
         mapoptions.center="40.0271987, 9.1019620"
-        mapoptions.ZoomLevel="10">
+        mapoptions.ZoomLevel="9">
     </com.esri.android.map.MapView>
 
 </RelativeLayout>
