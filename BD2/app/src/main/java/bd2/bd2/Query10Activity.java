@@ -155,49 +155,48 @@ public class Query10Activity extends Activity {
         @Override
         protected void onPostExecute(Object []aVoid) {
             super.onPostExecute(aVoid);
-            if (pDialog.isShowing())
-            {
+            if (pDialog.isShowing()) {
                 pDialog.dismiss();
             }
 
             ArrayList<Polyline> fiume = (ArrayList<Polyline>) array_final[1];
-           ArrayList<Polyline> strade = (ArrayList<Polyline>) array_final[0];
-            ArrayList<Polygon> parchi=(ArrayList<Polygon>) array_final[3];
+            ArrayList<Polyline> strade = (ArrayList<Polyline>) array_final[0];
+            ArrayList<Polygon> parchi = (ArrayList<Polygon>) array_final[3];
             ArrayList<Polygon> comuni = (ArrayList<Polygon>) array_final[2];
 
 
-            Graphic [] graphicFiume = new Graphic[fiume.size()];
-            Graphic [] graphicsComuni = new Graphic[comuni.size()];
-            Graphic [] graphicStrade = new Graphic[strade.size()];
-            Graphic [] graphicParchi = new Graphic[parchi.size()];
+            Graphic[] graphicFiume = new Graphic[fiume.size()];
+            Graphic[] graphicsComuni = new Graphic[comuni.size()];
+            Graphic[] graphicStrade = new Graphic[strade.size()];
+            Graphic[] graphicParchi = new Graphic[parchi.size()];
 
             GraphicsLayer layer_fiume = new GraphicsLayer();
             GraphicsLayer layer_comuni = new GraphicsLayer();
             GraphicsLayer layer_strade = new GraphicsLayer();
             GraphicsLayer layer_parchi = new GraphicsLayer();
 
-            if(fiume.size()!=0) {
+            if (fiume.size() != 0) {
                 for (int i = 0; i < fiume.size(); i++) {
 
                     graphicFiume[i] = new Graphic(fiume.get(i), sms_fiume);
                 }
                 layer_fiume.addGraphics(graphicFiume);
             }
-            if(comuni.size()!=0) {
+            if (comuni.size() != 0) {
                 for (int i = 0; i < comuni.size(); i++) {
 
                     graphicsComuni[i] = new Graphic(comuni.get(i), sms_comuni);
                 }
                 layer_comuni.addGraphics(graphicsComuni);
             }
-            if(strade.size()!=0) {
+            if (strade.size() != 0) {
                 for (int i = 0; i < strade.size(); i++) {
 
                     graphicStrade[i] = new Graphic(strade.get(i), sms_strade);
                 }
                 layer_strade.addGraphics(graphicStrade);
             }
-            if(parchi.size()!=0) {
+            if (parchi.size() != 0) {
                 for (int i = 0; i < parchi.size(); i++) {
 
                     graphicParchi[i] = new Graphic(parchi.get(i), sms_parco);
@@ -205,10 +204,12 @@ public class Query10Activity extends Activity {
                 layer_parchi.addGraphics(graphicParchi);
             }
 
-            mMapView.addLayer(layer_comuni);
-            mMapView.addLayer(layer_parchi);
             mMapView.addLayer(layer_fiume);
             mMapView.addLayer(layer_strade);
+            mMapView.addLayer(layer_parchi);
+            mMapView.addLayer(layer_comuni);
+
+
         }
     }
 }
