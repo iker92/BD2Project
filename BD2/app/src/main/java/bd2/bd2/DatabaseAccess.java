@@ -101,14 +101,13 @@ public class DatabaseAccess {
     private ArrayList<Point> createPoint(ArrayList<String> punti) {
 
         ArrayList<Point> point_result = new ArrayList<>();
+
         ExecutorService es = Executors.newCachedThreadPool();
         ArrayList<GetSinglePoint> coll = new ArrayList<>();
-        Log.d("drawPoint", "Inizio disegno punto");
 
         for (int i = 0; i < punti.size(); i++) {
 
-            Log.d("we", "Punto " + i);
-            coll.add(new GetSinglePoint(punti.get(i), i));
+            coll.add(new GetSinglePoint(punti.get(i)));
 
         }
         List<Future<Point>> results = new LinkedList<>();
@@ -133,7 +132,7 @@ public class DatabaseAccess {
     }
     public ArrayList<Polygon> createPolygon(ArrayList<String> poly)  {
 
-        Log.d("drawPoly", "Inizio disegno poligono");
+
         ArrayList<Polygon> polyg=new ArrayList<>();
 
         ExecutorService es = Executors.newCachedThreadPool();
@@ -141,8 +140,7 @@ public class DatabaseAccess {
 
         for (int i = 0; i < poly.size(); i++) {
 
-            Log.d("we", "Polygono " + i);
-            coll.add(new GetSinglePolygon(poly.get(i), i));
+            coll.add(new GetSinglePolygon(poly.get(i)));
 
         }
         List<Future<Polygon>> results = new LinkedList<>();
@@ -169,14 +167,13 @@ public class DatabaseAccess {
     private ArrayList<Polyline> createPolyline(ArrayList<String> multi_line) {
 
         ArrayList<Polyline> polyline=new ArrayList<>();
+
         ExecutorService es = Executors.newCachedThreadPool();
         ArrayList<GetSinglePolyline> coll = new ArrayList<>();
-        Log.d("drawPoly", "Inizio disegno polyline");
 
         for (int i = 0; i < multi_line.size(); i++) {
 
-            Log.d("we", "PolyLine " + i);
-            coll.add(new GetSinglePolyline(multi_line.get(i), i));
+            coll.add(new GetSinglePolyline(multi_line.get(i)));
 
         }
         List<Future<Polyline>> results = new LinkedList<>();
@@ -1107,22 +1104,19 @@ public class DatabaseAccess {
 
     class GetSinglePolygon implements Callable<Polygon> {
 
-        private int id;
         private Polygon polygon;
-        private String passedString;
+        private String polygonWKT;
 
-        public GetSinglePolygon(String passedString, int id) {
-            this.passedString = passedString;
-            this.id = id;
+        public GetSinglePolygon(String polygonWKT) {
+            this.polygonWKT = polygonWKT;
             polygon = new Polygon();
         }
 
         @Override
         public Polygon call() throws java.lang.Exception {
-            Log.d("THREADS", "Thread " + id + " started.");
             SpatialReference input = SpatialReference.create(3003);
             SpatialReference output = SpatialReference.create(3857);
-            String pointStr = passedString.substring(9, passedString.length());
+            String pointStr = polygonWKT.substring(9, polygonWKT.length());
             String[] split_comma = pointStr.split("\\s*,\\s*");
 
             for (int j = 0; j < split_comma.length; j++) {
@@ -1151,29 +1145,25 @@ public class DatabaseAccess {
                 }
             }
             Polygon webPolygon = (Polygon) GeometryEngine.project(polygon, input, output);
-            Log.d("THREADS", "Thread " + id + " returning.");
             return webPolygon;
         }
     }
 
     class GetSinglePolyline implements Callable<Polyline> {
 
-        private int id;
         private Polyline polyline;
-        private String passedString;
+        private String polylineWKT;
 
-        public GetSinglePolyline(String passedString, int id) {
-            this.passedString = passedString;
-            this.id = id;
+        public GetSinglePolyline(String polylineWKT) {
+            this.polylineWKT = polylineWKT;
             polyline = new Polyline();
         }
 
         @Override
         public Polyline call() throws java.lang.Exception {
-            Log.d("THREADS", "Thread " + id + " started.");
             SpatialReference input = SpatialReference.create(3003);
             SpatialReference output = SpatialReference.create(3857);
-            String pointStr = passedString.substring(11, passedString.length());
+            String pointStr = polylineWKT.substring(11, polylineWKT.length());
             String[] split_comma = pointStr.split("\\s*,\\s*");
 
             for (int j = 0; j < split_comma.length; j++) {
@@ -1202,30 +1192,26 @@ public class DatabaseAccess {
                 }
             }
             Polyline webPolyline = (Polyline) GeometryEngine.project(polyline, input, output);
-            Log.d("THREADS", "Thread " + id + " returning.");
             return webPolyline;
         }
     }
 
 
     private class GetSinglePoint implements Callable<Point>{
-        private int id;
         private Point point;
-        private String passedString;
+        private String pointWKT;
 
-        public GetSinglePoint(String passedString, int id) {
-            this.passedString = passedString;
-            this.id = id;
+        public GetSinglePoint(String pointWKT) {
+            this.pointWKT = pointWKT;
             point = new Point();
         }
 
 
         @Override
         public Point call() throws java.lang.Exception {
-            Log.d("THREADS", "Thread " + id + " started.");
             SpatialReference input = SpatialReference.create(3003);
             SpatialReference output = SpatialReference.create(3857);
-            String temp = passedString.substring(6);
+            String temp = pointWKT.substring(6);
             String[] split = temp.split(" ");
             String first = split[0];
 
@@ -1242,7 +1228,6 @@ public class DatabaseAccess {
 
             point.setXY(x, y);
             Point webPoint = (Point) GeometryEngine.project(point, input, output);
-            Log.d("THREADS", "Thread " + id + " returning.");
             return webPoint;
         }
     }
