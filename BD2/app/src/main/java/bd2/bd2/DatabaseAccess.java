@@ -15,6 +15,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 public class DatabaseAccess {
@@ -24,7 +31,7 @@ public class DatabaseAccess {
     private static final boolean ERROR = true;
     private Database database;
     private static DatabaseAccess instance;
-    private static String DB_NAME = "dbProva1.sqlite";
+    private static String DB_NAME = "DBFinal.sqlite";
     private static String DB_PATH = "/data/data/bd2.bd2/databases";
 
     /**
@@ -41,7 +48,7 @@ public class DatabaseAccess {
             }
         }
 
-        InputStream inputStream = context.getAssets().open("databases/dbProva1.sqlite");
+        InputStream inputStream = context.getAssets().open("databases/DBFinal.sqlite");
         copyDatabase(inputStream, DB_PATH + File.separator + DB_NAME);
         database = new Database();
 
@@ -94,119 +101,102 @@ public class DatabaseAccess {
     private ArrayList<Point> createPoint(ArrayList<String> punti) {
 
         ArrayList<Point> point_result = new ArrayList<>();
+        ExecutorService es = Executors.newCachedThreadPool();
+        ArrayList<GetSinglePoint> coll = new ArrayList<>();
+        Log.d("drawPoint", "Inizio disegno punto");
 
         for (int i = 0; i < punti.size(); i++) {
 
-            String temp = punti.get(i).substring(6);
-            String[] split = temp.split(" ");
-            String first = split[0];
+            Log.d("we", "Punto " + i);
+            coll.add(new GetSinglePoint(punti.get(i), i));
 
-            String second = split[1];
-            if (second.endsWith("))")) {
-                second = second.substring(0, second.length() - 2);
-            }
-            if (second.endsWith(")")) {
-                second = second.substring(0, second.length() - 1);
-            }
-
-            double x = Double.parseDouble(first);
-            double y = Double.parseDouble(second);
-
-            Point point = new Point();
-            SpatialReference input = SpatialReference.create(3003);
-            SpatialReference output = SpatialReference.create(3857);
-            point.setXY(x, y);
-            Point webPoint = (Point) GeometryEngine.project(point, input, output);
-
-            point_result.add(webPoint);
         }
+        List<Future<Point>> results = new LinkedList<>();
+        try {
+            results = es.invokeAll(coll);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        for (Future<Point> fut : results) {
+            try {
+                point_result.add(fut.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+        }
+
         return point_result;
     }
+    public ArrayList<Polygon> createPolygon(ArrayList<String> poly)  {
 
-    private ArrayList<Polygon> createPolygon(ArrayList<String> poly) {
-
+        Log.d("drawPoly", "Inizio disegno poligono");
         ArrayList<Polygon> polyg=new ArrayList<>();
+
+        ExecutorService es = Executors.newCachedThreadPool();
+        ArrayList<GetSinglePolygon> coll = new ArrayList<>();
 
         for (int i = 0; i < poly.size(); i++) {
 
-            Polygon polygon=new Polygon();
-            String pointStr = poly.get(i).substring(9, poly.get(i).length());
+            Log.d("we", "Polygono " + i);
+            coll.add(new GetSinglePolygon(poly.get(i), i));
 
-            String[] split_comma = pointStr.split("\\s*,\\s*");
-
-            for (int j = 0; j < split_comma.length; j++) {
-
-                String[] split = split_comma[j].split(" ");
-                String first = split[0];
-                String second = split[1];
-
-                if (second.endsWith("))")) {
-                    second = second.substring(0, second.length() - 2);
-                }
-                if (second.endsWith(")")) {
-                    second = second.substring(0, second.length() - 1);
-                }
-
-                // mettere i punti trovati in un array per poi creare il polygon associato
-                double x = Double.parseDouble(first);
-                double y = Double.parseDouble(second);
-                Point point = new Point(x, y);
-                SpatialReference input = SpatialReference.create(3003);
-                SpatialReference output = SpatialReference.create(3857);
-                Point webPoint = (Point) GeometryEngine.project(point, input, output);
-
-                if (j == 0) {
-                    polygon.startPath(webPoint);
-                } else {
-                    polygon.lineTo(webPoint);
-                }
-            }
-            polyg.add(polygon);
         }
+        List<Future<Polygon>> results = new LinkedList<>();
+        try {
+            results = es.invokeAll(coll);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        for (Future<Polygon> fut : results) {
+            try {
+                polyg.add(fut.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+        }
+
         return polyg;
     }
 
     private ArrayList<Polyline> createPolyline(ArrayList<String> multi_line) {
 
         ArrayList<Polyline> polyline=new ArrayList<>();
+        ExecutorService es = Executors.newCachedThreadPool();
+        ArrayList<GetSinglePolyline> coll = new ArrayList<>();
+        Log.d("drawPoly", "Inizio disegno polyline");
 
         for (int i = 0; i < multi_line.size(); i++) {
 
-            Polyline poly2 = new Polyline();
-            String pointStr = String.valueOf(multi_line.get(i).subSequence(11, multi_line.get(i).length()));
-            String[] split_comma = pointStr.split("\\s*,\\s*");
+            Log.d("we", "PolyLine " + i);
+            coll.add(new GetSinglePolyline(multi_line.get(i), i));
 
-            for (int j = 0; j < split_comma.length; j++) {
+        }
+        List<Future<Polyline>> results = new LinkedList<>();
+        try {
+            results = es.invokeAll(coll);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-                String[] split = split_comma[j].split(" ");
-                String first = split[0];
-                String second = split[1];
-
-                if (second.endsWith("))")) {
-                    second = second.substring(0, second.length() - 2);
-                }
-                if (second.endsWith(")")) {
-                    second = second.substring(0, second.length() - 1);
-                }
-
-                // mettere i punti trovati in un array per poi creare la polyline associata
-                double x = Double.parseDouble(first);
-                double y = Double.parseDouble(second);
-                Point point = new Point(x, y);
-                SpatialReference input = SpatialReference.create(3003);
-                SpatialReference output = SpatialReference.create(3857);
-                Point webPoint = (Point) GeometryEngine.project(point, input, output);
-                if(j==0)
-                {
-                    poly2.startPath(webPoint);
-                }
-                else {
-                    poly2.lineTo(webPoint);
-                }
+        for (Future<Polyline> fut : results) {
+            try {
+                polyline.add(fut.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
 
-            polyline.add(poly2);
         }
+
         return polyline;
     }
 
@@ -229,7 +219,7 @@ public class DatabaseAccess {
         ArrayList<String> parchi=new ArrayList<>();
         String parco = "";
 
-        String intersezione = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry ,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String intersezione = "SELECT ASText(comune.Geometry) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry ,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -258,7 +248,7 @@ public class DatabaseAccess {
         if(nomi_comuni.size()>=1) {
             for (int i = 0; i < nomi_comuni.size(); i++) {
 
-                String query_strade = "SELECT ASText(ST_GeometryN(reteStradale.Geometry,1)) " +
+                String query_strade = "SELECT ASText(reteStradale.Geometry) " +
                         "from DBTComune JOIN reteStradale " +
                         "ON ST_Intersects(ST_GeomFromText('" + nomi_comuni.get(i) + "'), reteStradale.Geometry) " +
                         "AND DBTComune.ROWID IN " +
@@ -318,7 +308,7 @@ public class DatabaseAccess {
         ArrayList<String> strade_nomi = new ArrayList<>();
         ArrayList<Polyline> strade = new ArrayList<>();
 
-        String query = "SELECT ASText(GeometryN(reteStradale.Geometry,1)) from DBTComune,reteStradale WHERE " +
+        String query = "SELECT ASText(reteStradale.Geometry) from DBTComune,reteStradale WHERE " +
                 "DBTComune.NOME = '"+name+"' AND ST_Intersects(DbtComune.Geometry, reteStradale.Geometry) " +
                 "AND DBTComune.ROWID IN" +
                 " (SELECT pkid"+
@@ -328,7 +318,7 @@ public class DatabaseAccess {
                 "     ymax >= MbrMinY(reteStradale.Geometry))"+
                 " GROUP BY reteStradale.PK_UID;";
 
-        String query_comune = "SELECT ASText(GeometryN(Geometry,1)) from DBTComune where nome = '"+name+"';";
+        String query_comune = "SELECT ASText(Geometry) from DBTComune where nome = '"+name+"';";
 
         try {
             Stmt stmt = database.prepare(query);
@@ -384,7 +374,7 @@ public class DatabaseAccess {
         polygon[0]=new ArrayList<>();
         polygon[1]=new ArrayList<>();
 
-        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String query = "SELECT ASText(comune.Geometry) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -455,23 +445,25 @@ public class DatabaseAccess {
 
         ArrayList<Point> point_result = new ArrayList<>();
         ArrayList<String> punti = new ArrayList<>();
-
+        ArrayList<String> comuni_res = new ArrayList<>();
         String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))) from DBTComune" +
-                " where NOME = '"+name+"';";
+                " where NOME = '" + name + "';";
         String bufferGeom = "";
 
         try {
             Stmt stmt = database.prepare(query);
-            if (stmt.step()) {
+            while (stmt.step()) {
                 bufferGeom = stmt.column_string(0);
+                comuni_res.add(bufferGeom);
             }
 
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        for (int i = 0; i < comuni_res.size(); i++) {
 
-        query = "SELECT  NOME , ASText(ST_centroid(ST_GeometryN(Geometry,1))) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry);";
+        query = "SELECT  NOME , ASText(ST_centroid(Geometry)) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + comuni_res.get(i) + "') ,Geometry);";
 
         try {
             Stmt stmt = database.prepare(query);
@@ -479,7 +471,7 @@ public class DatabaseAccess {
             while (stmt.step()) {
                 String name1 = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
-                if(wkt!=null) {
+                if (wkt != null) {
                     punti.add(wkt);
                 }
             }
@@ -487,6 +479,7 @@ public class DatabaseAccess {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
         if(punti.size()!=0){
             point_result=createPoint(punti);
         }
@@ -501,37 +494,42 @@ public class DatabaseAccess {
      **/
     public ArrayList<Polygon> [] queryComuniNearbyPolygon(String name) {
 
-        ArrayList<Polygon>polygon = new ArrayList<>();
-        ArrayList<Polygon> comune_poly=new ArrayList<>();
-        ArrayList<Polygon> [] totalPolygon=new ArrayList[2];
-        totalPolygon[0]=new ArrayList<>();
-        totalPolygon[1]=new ArrayList<>();
+        ArrayList<Polygon> polygon = new ArrayList<>();
+        ArrayList<Polygon> comune_poly = new ArrayList<>();
+        ArrayList<String> comuni_res = new ArrayList<>();
+        ArrayList<Polygon>[] totalPolygon = new ArrayList[2];
+        totalPolygon[0] = new ArrayList<>();
+        totalPolygon[1] = new ArrayList<>();
 
         String query = "SELECT Hex(ST_AsBinary(ST_Buffer(Geometry, 1.0))) from DBTComune" +
-                " where NOME = '"+name+"';";
+                " where NOME = '" + name + "';";
         String bufferGeom = "";
 
         try {
             Stmt stmt = database.prepare(query);
-            if (stmt.step()) {
+            while (stmt.step()) {
                 bufferGeom = stmt.column_string(0);
+                comuni_res.add(bufferGeom);
             }
 
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        query = "SELECT NOME, ASText(ST_GeometryN(Geometry,1)) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + bufferGeom + "') ,Geometry)"+
-                "AND DBTComune.ROWID IN" +
-                " (SELECT pkid"+
-                " FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(ST_GeomFromWKB(x'" + bufferGeom + "')) AND" +
-                "     ymin <= MbrMaxY(ST_GeomFromWKB(x'" + bufferGeom + "')) AND" +
-                "     xmax >= MbrMinX(ST_GeomFromWKB(x'" + bufferGeom + "')) AND" +
-                "     ymax >= MbrMinY(ST_GeomFromWKB(x'" + bufferGeom + "')))"+
-                " GROUP BY DBTComune.PK_UID;";
         ArrayList<String> multi_line = new ArrayList<>();
-        ArrayList<String> comune=new ArrayList<>();
+        ArrayList<String> comune = new ArrayList<>();
+        for (int i = 0; i < comuni_res.size(); i++) {
+
+
+        query = "SELECT NOME, ASText(Geometry) from DBTComune where ST_Intersects( ST_GeomFromWKB(x'" + comuni_res.get(i) + "') ,Geometry)" +
+                "AND DBTComune.ROWID IN" +
+                " (SELECT pkid" +
+                " FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(ST_GeomFromWKB(x'" + comuni_res.get(i) + "')) AND" +
+                "     ymin <= MbrMaxY(ST_GeomFromWKB(x'" + comuni_res.get(i) + "')) AND" +
+                "     xmax >= MbrMinX(ST_GeomFromWKB(x'" + comuni_res.get(i) + "')) AND" +
+                "     ymax >= MbrMinY(ST_GeomFromWKB(x'" + comuni_res.get(i) + "')))" +
+                " GROUP BY DBTComune.PK_UID;";
+
 
         try {
             Stmt stmt = database.prepare(query);
@@ -540,7 +538,7 @@ public class DatabaseAccess {
 
                 String name1 = stmt.column_string(0);
                 String wkt = stmt.column_string(1);
-                if(wkt!=null) {
+                if (wkt != null) {
                     if (name.equals(name1)) {
                         comune.add(wkt);
                     } else {
@@ -553,6 +551,7 @@ public class DatabaseAccess {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
         if (multi_line.size()!=0){
             polygon=createPolygon(multi_line);
@@ -579,7 +578,7 @@ public class DatabaseAccess {
         array_final[0] = new ArrayList<>();
         array_final[1] = new ArrayList<>();
 
-        String query = "SELECT ASText(ST_GeometryN(reteStradale.Geometry,1)) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) " +
+        String query = "SELECT ASText(reteStradale.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) " +
                 "AND reteStradale.ROWID IN" +
                 " (SELECT pkid"+
                 " FROM idx_reteStradale_geometry WHERE xmin <= MbrMaxX(fiumiTorrenti_ARC.Geometry) AND" +
@@ -640,7 +639,7 @@ public class DatabaseAccess {
         ArrayList<String> multi_line = new ArrayList<>();
         ArrayList<String> multi_parco=new ArrayList<>();
 
-        String query = "SELECT ASText(ST_GeometryN(comune.Geometry,1)) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Within(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String query = "SELECT ASText(comune.Geometry) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Within(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -711,7 +710,7 @@ public class DatabaseAccess {
         finale[0] = new ArrayList<Polyline>();
         finale[1] = new ArrayList<Polygon>();
 
-        String query = "SELECT ASText(ST_GeometryN(DBTComune.Geometry, 1)) from fiumiTorrenti_ARC JOIN DBTComune ON " +
+        String query = "SELECT ASText(DBTComune.Geometry) from fiumiTorrenti_ARC JOIN DBTComune ON " +
                 "((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Crosses(fiumiTorrenti_ARC.Geometry, DBTComune.Geometry))) " +
                 "AND DBTComune.ROWID IN" +
                 " (SELECT pkid"+
@@ -789,7 +788,7 @@ public class DatabaseAccess {
                 "ymax >= MbrMinY(comune.Geometry)) " +
                 "GROUP BY parchi.PK_UID ;";
 
-        String query_comune = "SELECT ASText(ST_GeometryN(comune.Geometry,1)), ASText(ST_GeometryN(strade.Geometry,1)) from DBTComune comune ,reteStradale strade where " +
+        String query_comune = "SELECT ASText(comune.Geometry), ASText(strade.Geometry) from DBTComune comune ,reteStradale strade where " +
                 "comune.NOME = '"+name+"' " +
                 "AND ST_Contains(comune.Geometry,strade.Geometry) " +
                 "AND strade.ROWID IN " +
@@ -821,9 +820,14 @@ public class DatabaseAccess {
 
         try{
             Stmt stmt2 = database.prepare(query_comune);
+            int i=0;
             while (stmt2.step()) {
                 wkt = stmt2.column_string(0);
                 String strada=stmt2.column_string(1);
+
+                if(!wkt.equals("")){
+                    comune.add(wkt);
+                }
                 if(strada!=null) {
                     multi_line.add(strada);
                 }
@@ -836,16 +840,12 @@ public class DatabaseAccess {
         {
             e.printStackTrace();
         }
-        if(wkt!=""){
-            comune.add(wkt);
-        }
+
 
         if(comune.size()==0) {
-            String query_comune_alone = "SELECT ASText(ST_GeometryN(comuni.Geometry,1)) FROM DBTComune comuni WHERE comuni.NOME='" + name + "';";
+            String query_comune_alone = "SELECT ASText(comuni.Geometry) FROM DBTComune comuni WHERE comuni.NOME='" + name + "';";
 
             try {
-                StringBuilder sb = new StringBuilder();
-
                 Stmt stmt = database.prepare(query_comune_alone);
 
                 while (stmt.step()) {
@@ -888,9 +888,9 @@ public class DatabaseAccess {
         String strade="";
         String fiumi="";
 
-        String query_comune = "SELECT ASText(ST_GeometryN(DBTComune.Geometry, 1)) from DBTComune where nome = '"+name+"'";
+        String query_comune = "SELECT ASText(DBTComune.Geometry) from DBTComune where nome = '"+name+"'";
 
-        String query = "SELECT ASText(ST_GeometryN(fiumi.Geometry, 1)), ASText(ST_GeometryN(strade.Geometry, 1))" +
+        String query = "SELECT ASText(fiumi.Geometry), ASText(strade.Geometry)" +
                 " FROM DBTComune comuni, reteStradale strade, fiumiTorrenti_ARC fiumi " +
                 "where (ST_Contains(comuni.Geometry, fiumi.Geometry) and ST_Contains(comuni.Geometry, strade.Geometry)) " +
                 "AND comuni.nome='" + name + "' " +
@@ -970,7 +970,7 @@ public class DatabaseAccess {
         String fiume="";
 
 
-        String query_strade = "SELECT ASText(parchi.Geometry), ASText(ST_GeometryN(strade.Geometry,1))from " +
+        String query_strade = "SELECT ASText(parchi.Geometry), ASText(strade.Geometry)from " +
                 " sistemaRegionaleParchi parchi, reteStradale strade " +
                 " WHERE " +
                 "parchi.nome = '"+name+"' AND ST_Crosses(strade.Geometry, parchi.Geometry) " +
@@ -1056,7 +1056,7 @@ public class DatabaseAccess {
         for (int i = 0; i <strade_stringa.size() ; i++) {
 
 
-            String queryComuniStrade = " SELECT ASText(ST_GeometryN(comune.Geometry,1)) from " +
+            String queryComuniStrade = " SELECT ASText(comune.Geometry) from " +
                     "DBTComune comune, reteStradale strade "+
                     "WHERE " +
                     "ST_Intersects(ST_GeomFromText('" + strade_stringa.get(i) + "'), comune.Geometry) " +
@@ -1102,6 +1102,149 @@ public class DatabaseAccess {
         }
 
         return array_final;
+    }
+
+
+    class GetSinglePolygon implements Callable<Polygon> {
+
+        private int id;
+        private Polygon polygon;
+        private String passedString;
+
+        public GetSinglePolygon(String passedString, int id) {
+            this.passedString = passedString;
+            this.id = id;
+            polygon = new Polygon();
+        }
+
+        @Override
+        public Polygon call() throws java.lang.Exception {
+            Log.d("THREADS", "Thread " + id + " started.");
+            SpatialReference input = SpatialReference.create(3003);
+            SpatialReference output = SpatialReference.create(3857);
+            String pointStr = passedString.substring(9, passedString.length());
+            String[] split_comma = pointStr.split("\\s*,\\s*");
+
+            for (int j = 0; j < split_comma.length; j++) {
+
+                String[] split = split_comma[j].split(" ");
+                String first = split[0];
+                String second = split[1];
+
+                if (second.endsWith("))")) {
+                    second = second.substring(0, second.length() - 2);
+                }
+                if (second.endsWith(")")) {
+                    second = second.substring(0, second.length() - 1);
+                }
+
+                // mettere i punti trovati in un array per poi creare il polygon associato
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+                Point point = new Point(x, y);
+
+
+                if (j == 0) {
+                    polygon.startPath(point);
+                } else {
+                    polygon.lineTo(point);
+                }
+            }
+            Polygon webPolygon = (Polygon) GeometryEngine.project(polygon, input, output);
+            Log.d("THREADS", "Thread " + id + " returning.");
+            return webPolygon;
+        }
+    }
+
+    class GetSinglePolyline implements Callable<Polyline> {
+
+        private int id;
+        private Polyline polyline;
+        private String passedString;
+
+        public GetSinglePolyline(String passedString, int id) {
+            this.passedString = passedString;
+            this.id = id;
+            polyline = new Polyline();
+        }
+
+        @Override
+        public Polyline call() throws java.lang.Exception {
+            Log.d("THREADS", "Thread " + id + " started.");
+            SpatialReference input = SpatialReference.create(3003);
+            SpatialReference output = SpatialReference.create(3857);
+            String pointStr = passedString.substring(11, passedString.length());
+            String[] split_comma = pointStr.split("\\s*,\\s*");
+
+            for (int j = 0; j < split_comma.length; j++) {
+
+                String[] split = split_comma[j].split(" ");
+                String first = split[0];
+                String second = split[1];
+
+                if (second.endsWith("))")) {
+                    second = second.substring(0, second.length() - 2);
+                }
+                if (second.endsWith(")")) {
+                    second = second.substring(0, second.length() - 1);
+                }
+
+                // mettere i punti trovati in un array per poi creare la polyline associata
+                double x = Double.parseDouble(first);
+                double y = Double.parseDouble(second);
+                Point point = new Point(x, y);
+
+
+                if (j == 0) {
+                    polyline.startPath(point);
+                } else {
+                    polyline.lineTo(point);
+                }
+            }
+            Polyline webPolyline = (Polyline) GeometryEngine.project(polyline, input, output);
+            Log.d("THREADS", "Thread " + id + " returning.");
+            return webPolyline;
+        }
+    }
+
+
+    private class GetSinglePoint implements Callable<Point>{
+        private int id;
+        private Point point;
+        private String passedString;
+
+        public GetSinglePoint(String passedString, int id) {
+            this.passedString = passedString;
+            this.id = id;
+            point = new Point();
+        }
+
+
+        @Override
+        public Point call() throws java.lang.Exception {
+            Log.d("THREADS", "Thread " + id + " started.");
+            SpatialReference input = SpatialReference.create(3003);
+            SpatialReference output = SpatialReference.create(3857);
+            String temp = passedString.substring(6);
+            String[] split = temp.split(" ");
+            String first = split[0];
+
+            String second = split[1];
+            if (second.endsWith("))")) {
+                second = second.substring(0, second.length() - 2);
+            }
+            if (second.endsWith(")")) {
+                second = second.substring(0, second.length() - 1);
+            }
+
+            double x = Double.parseDouble(first);
+            double y = Double.parseDouble(second);
+
+            point.setXY(x, y);
+            Point webPoint = (Point) GeometryEngine.project(point, input, output);
+            Log.d("THREADS", "Thread " + id + " returning.");
+            return webPoint;
+        }
     }
 }
 

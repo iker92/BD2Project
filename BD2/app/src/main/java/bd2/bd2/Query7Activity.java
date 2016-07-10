@@ -164,8 +164,8 @@ public class Query7Activity extends Activity {
             ArrayList<Polygon> comuni = (ArrayList<Polygon>) array_final[1];
 
 
-            Graphic[] graphicFiume = new Graphic[fiume.size()];
-            Graphic [] graphics = new Graphic[comuni.size()];
+            Graphic [] graphicFiume = new Graphic[fiume.size()];
+            Graphic [] graphicComuni = new Graphic[comuni.size()];
             GraphicsLayer layer_fiume = new GraphicsLayer();
             GraphicsLayer layer_comuni = new GraphicsLayer();
 
@@ -180,10 +180,10 @@ public class Query7Activity extends Activity {
             if(comuni.size()!=0) {
                 for (int i = 0; i < comuni.size(); i++) {
 
-                    graphics[i] = new Graphic(comuni.get(i), sms_comuni);
+                    graphicComuni[i] = new Graphic(comuni.get(i), sms_comuni);
                 }
 
-                layer_comuni.addGraphics(graphics);
+                layer_comuni.addGraphics(graphicComuni);
             }
 
             mMapView.addLayer(layer_comuni);

@@ -174,14 +174,18 @@ public class Query8Activity extends Activity {
 
             Graphic [] graphicsParchi = new Graphic[parchi.size()];
             Graphic [] graphicsStrade = new Graphic[strade.size()];
-            Graphic graphicComune=new Graphic(comune.get(0),sms_comuni);
+            Graphic [] graphicsComune = new Graphic[comune.size()];
 
             GraphicsLayer layer_parchi = new GraphicsLayer();
             GraphicsLayer layer_strade = new GraphicsLayer();
-            GraphicsLayer layer_Comune=new GraphicsLayer();
+            GraphicsLayer layer_Comune = new GraphicsLayer();
 
             if(comune.size()!=0) {
-                layer_Comune.addGraphic(graphicComune);
+                for (int i = 0; i < comune.size(); i++) {
+
+                    graphicsComune[i] = new Graphic(comune.get(i), sms_comuni);
+                }
+                layer_Comune.addGraphics(graphicsComune);
             }
             if(parchi.size()!=0) {
                 for (int i = 0; i < parchi.size(); i++) {

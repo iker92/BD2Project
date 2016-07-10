@@ -167,8 +167,8 @@ public class Query9Activity extends Activity {
             ArrayList<Polyline> strade = (ArrayList<Polyline>) array_final[2];
 
 
-            Graphic[] graphicFiume = new Graphic[fiume.size()];
-            Graphic [] graphics = new Graphic[comuni.size()];
+            Graphic [] graphicFiume = new Graphic[fiume.size()];
+            Graphic [] graphicComune = new Graphic[comuni.size()];
             Graphic [] graphicStrade = new Graphic[strade.size()];
 
             GraphicsLayer layer_fiume = new GraphicsLayer();
@@ -185,9 +185,9 @@ public class Query9Activity extends Activity {
             if(comuni.size()!=0) {
                 for (int i = 0; i < comuni.size(); i++) {
 
-                    graphics[i] = new Graphic(comuni.get(i), sms_comuni);
+                    graphicComune[i] = new Graphic(comuni.get(i), sms_comuni);
                 }
-                layer_comuni.addGraphics(graphics);
+                layer_comuni.addGraphics(graphicComune);
             }
             if(strade.size()!=0) {
                 for (int i = 0; i < strade.size(); i++) {

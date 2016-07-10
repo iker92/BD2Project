@@ -176,18 +176,23 @@ public class Query1Activity extends Activity {
             GraphicsLayer layer_comuniVicini = new GraphicsLayer();
             if(comune.size()!=0) {
 
-                Graphic graphicsComune = new Graphic(comune.get(0), sms_comuni);
+                Graphic[] graphicsComune = new Graphic[comune.size()];
+
+                for (int i = 0; i < comune.size(); i++) {
+
+                    graphicsComune[i] = new Graphic(comune.get(i), sms_comuni);
+                }
 
                 //aggiungo i punti al layer di queryComuniNearByPolygon
 
-                layer_comune.addGraphic(graphicsComune);
+                layer_comune.addGraphics(graphicsComune);
 
             }
             if(comuniVicini.size()!=0) {
                 Graphic[] graphicsComuniVicini = new Graphic[comuniVicini.size()];
 
                 //aggiungo i punti al layer di queryComuniNearByPolygon
-                for (int i = 0; i < polygons[1].size(); i++) {
+                for (int i = 0; i < comuniVicini.size(); i++) {
 
                     graphicsComuniVicini[i] = new Graphic(comuniVicini.get(i), sms_comuniVicini);
                 }
