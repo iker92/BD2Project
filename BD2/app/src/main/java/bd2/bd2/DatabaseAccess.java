@@ -371,7 +371,7 @@ public class DatabaseAccess {
         polygon[0]=new ArrayList<>();
         polygon[1]=new ArrayList<>();
 
-        String query = "SELECT ASText(comune.Geometry) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Intersects(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
+        String query = "SELECT ASText(comune.Geometry) , ASText(parchi.Geometry) FROM DBTComune comune JOIN sistemaRegionaleParchi parchi on ST_Overlaps(comune.Geometry,parchi.Geometry) WHERE parchi.nome='"+name+"' " +
                 "AND comune.ROWID IN " +
                 "(SELECT pkid " +
                 "FROM idx_DBTComune_geometry WHERE xmin <= MbrMaxX(parchi.Geometry) AND " +
@@ -575,7 +575,7 @@ public class DatabaseAccess {
         array_final[0] = new ArrayList<>();
         array_final[1] = new ArrayList<>();
 
-        String query = "SELECT ASText(reteStradale.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Intersects(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) " +
+        String query = "SELECT ASText(reteStradale.Geometry) from fiumiTorrenti_ARC JOIN reteStradale ON ((fiumiTorrenti_ARC.nome = '"+name+"') AND (ST_Crosses(fiumiTorrenti_ARC.Geometry, reteStradale.Geometry))) " +
                 "AND reteStradale.ROWID IN" +
                 " (SELECT pkid"+
                 " FROM idx_reteStradale_geometry WHERE xmin <= MbrMaxX(fiumiTorrenti_ARC.Geometry) AND" +
